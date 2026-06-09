@@ -2,6 +2,7 @@
   "name": "muxpreview",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.32.1",
   "description": "Local inspection and preview tooling for muOS themes.",
   "bin": {
     "muxpreview": "./dist/cli/index.js"

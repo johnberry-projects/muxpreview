@@ -6,9 +6,9 @@ and iterate on themes without a console.
 The first build iteration provides a TypeScript theme scanner and CLI.
 
 ```sh
-npm install
-npm run build
-npm run inspect -- ./path/to/theme
+pnpm install
+pnpm run build
+pnpm run inspect -- ./path/to/theme
 ```
 
 After a build, the package executable can be invoked as:
