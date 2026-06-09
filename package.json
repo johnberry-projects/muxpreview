@@ -1,0 +1,34 @@
+{
+  "name": "muxpreview",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local inspection and preview tooling for muOS themes.",
+  "bin": {
+    "muxpreview": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "dev": "vite --configLoader runner",
+    "build": "npm run build:cli && npm run build:app",
+    "build:app": "tsc -p tsconfig.app.json && vite build --configLoader runner",
+    "build:cli": "tsc -p tsconfig.cli.json",
+    "inspect": "tsx cli/index.ts inspect",
+    "test": "vitest run --root . --configLoader runner"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.0"
+  }
+}
