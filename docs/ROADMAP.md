@@ -1,5 +1,30 @@
 # muxpreview Roadmap
 
+## Current implementation status
+
+The first M1 build iteration now includes:
+
+- a React, TypeScript, and Vite application shell
+- framework-agnostic theme inspection types
+- recursive Node filesystem scanning
+- classification of resolutions, scheme files, fonts, glyphs, images, and
+  unknown files
+- inspection warnings for missing resolutions and common asset folders
+- a readable `muxpreview inspect <theme-path>` CLI
+- build and test tooling
+
+This iteration deliberately does not include:
+
+- scheme parsing or merge rules
+- browser theme rendering
+- hot reload or filesystem watching
+- a local HTTP theme server
+- `.muxthm` package loading
+
+The next iteration should complete M1 inspection in the browser by introducing
+a small local server API, then move into M2 scheme parsing and effective-value
+provenance. The scanner should remain independent of React.
+
 ## 1. Roadmap principles
 
 This roadmap turns the architecture into incremental, testable milestones.
