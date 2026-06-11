@@ -23,10 +23,6 @@
   "include": [
     "cli",
     "core",
-    "model",
-    "parser",
-    "scanner",
-    "validation",
     "server"
   ],
   "exclude": [

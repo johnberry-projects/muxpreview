@@ -1,4 +1,4 @@
-import type { ThemeInspectionResult } from "../model";
+import type { ThemeInspectionResult } from "../core/model";
 
 export function formatInspectionSummary(
   inspection: ThemeInspectionResult

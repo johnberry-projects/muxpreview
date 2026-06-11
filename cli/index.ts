@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { ThemeInspectionService } from "../core";
-import { NodeThemeScanner } from "../scanner";
+import { NodeThemeScanner } from "../server/node-theme-scanner";
 import { formatInspectionSummary } from "./format-inspection-summary";
 
 async function main(args: string[]): Promise<number> {

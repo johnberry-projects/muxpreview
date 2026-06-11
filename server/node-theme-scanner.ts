@@ -4,7 +4,7 @@ import type {
   ScannedThemeFile,
   ThemeFileScanner,
   ThemeScan
-} from "../core/theme-file-scanner";
+} from "../core/scanner";
 
 const IGNORED_FILE_PREFIXES = ["._"];
 const IGNORED_FILE_NAMES = new Set([".DS_Store", "Thumbs.db"]);

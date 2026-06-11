@@ -4,10 +4,10 @@ import type {
   ThemeInspectionResult,
   ThemeResolution,
   ThemeSchemeFile
-} from "../model";
-import { classifyThemePath } from "../parser";
-import { createInspectionWarnings } from "../validation";
-import type { ThemeFileScanner } from "./theme-file-scanner";
+} from "./model";
+import { classifyThemePath } from "./parser";
+import type { ThemeFileScanner } from "./scanner";
+import { createInspectionWarnings } from "./validation";
 
 export class ThemeInspectionService {
   constructor(private readonly scanner: ThemeFileScanner) {}

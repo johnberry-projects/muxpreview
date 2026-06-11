@@ -1,5 +1,5 @@
-import type { ScannedThemeFile } from "../core/theme-file-scanner";
 import type { ThemeAssetKind } from "../model";
+import type { ScannedThemeFile } from "../scanner";
 
 const RESOLUTION_PATTERN = /^(\d+)x(\d+)$/i;
 const IMAGE_EXTENSIONS = new Set([".bmp", ".gif", ".jpeg", ".jpg", ".png"]);
