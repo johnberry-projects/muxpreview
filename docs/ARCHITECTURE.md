@@ -157,6 +157,12 @@ Vite HMR and theme reload are related but distinct:
 Theme reload should use a muxpreview protocol rather than pretending theme
 files are JavaScript modules.
 
+The current browser inspection iteration uses a smaller transitional setup:
+the Node server serves the production build, while Vite runs separately and
+proxies `/api` during application development. Embedding Vite remains a future
+option when a single development lifecycle provides enough value to justify
+the coupling.
+
 ## 5. Repository layout
 
 Proposed eventual layout:
@@ -660,6 +666,11 @@ GET  /api/v1/events
 ```
 
 The protocol should be versioned from its first public use.
+
+The first local-only endpoint is `GET /api/theme-inspection`. It returns the
+existing inspection model without introducing an otherwise unused protocol
+layer. This route is transitional and should be versioned before use by a
+public CLI contract or showroom.
 
 ### 10.3 Asset serving
 

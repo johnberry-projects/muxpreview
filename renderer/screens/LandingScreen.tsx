@@ -1,13 +1,15 @@
-export function LandingScreen() {
+interface LandingScreenProps {
+  message: string;
+  title: string;
+}
+
+export function LandingScreen({ message, title }: LandingScreenProps) {
   return (
     <main className="app-shell">
-      <section>
+      <section className="status-panel">
         <p className="eyebrow">muxpreview</p>
-        <h1>Theme inspection foundation</h1>
-        <p>
-          This build establishes the scanner and CLI. Browser theme rendering
-          will be added in a later milestone.
-        </p>
+        <h1>{title}</h1>
+        <p>{message}</p>
       </section>
     </main>
   );

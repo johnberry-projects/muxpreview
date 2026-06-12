@@ -2,7 +2,7 @@
 
 ## Current implementation status
 
-The first M1 build iteration now includes:
+The theme inspection foundation and browser inspection iteration now include:
 
 - a React, TypeScript, and Vite application shell
 - framework-agnostic theme inspection types
@@ -11,6 +11,11 @@ The first M1 build iteration now includes:
   unknown files
 - inspection warnings for missing resolutions and common asset folders
 - a readable `muxpreview inspect <theme-path>` CLI
+- a loopback-only local HTTP server
+- `GET /api/theme-inspection`, using the existing inspection service
+- a browser dashboard for paths, resolutions, schemes, asset counts, and
+  warnings
+- loading and actionable configuration/error states
 - build and test tooling
 
 This iteration deliberately does not include:
@@ -18,12 +23,27 @@ This iteration deliberately does not include:
 - scheme parsing or merge rules
 - browser theme rendering
 - hot reload or filesystem watching
-- a local HTTP theme server
 - `.muxthm` package loading
 
-The next iteration should complete M1 inspection in the browser by introducing
-a small local server API, then move into M2 scheme parsing and effective-value
-provenance. The scanner should remain independent of React.
+The next iteration should add focused API and browser integration tests, then
+move into scheme parsing and effective-value provenance. The scanner remains
+independent of React.
+
+### Browser inspection decisions and limits
+
+- The server uses `MUXPREVIEW_THEME_PATH` as its only initial theme selection
+  mechanism.
+- The built app and API share one loopback server. During Vite development,
+  Vite proxies `/api` to a separately started server process.
+- The API currently returns the absolute configured theme path because this
+  iteration explicitly requires displaying it. This is acceptable only for
+  the loopback-only local dashboard and must be replaced by a display-safe
+  path contract before remote access or showroom reuse.
+- The endpoint returns the existing `ThemeInspectionResult` directly. A
+  versioned protocol DTO remains future work once the contract needs to serve
+  more than the local application.
+- Browser inspection does not establish any new claim about muOS behavior; it
+  presents scanner observations and existing warnings only.
 
 ## 1. Roadmap principles
 

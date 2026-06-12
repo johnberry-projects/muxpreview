@@ -3,7 +3,8 @@
 Local development server and live preview tool for muOS themes. Build, test,
 and iterate on themes without a console.
 
-The first build iteration provides a TypeScript theme scanner and CLI.
+The current build provides a TypeScript theme scanner, CLI, and local browser
+inspection dashboard.
 
 ```sh
 pnpm install
@@ -11,10 +12,45 @@ pnpm run build
 pnpm run inspect -- ./path/to/theme
 ```
 
-After a build, the package executable can be invoked as:
+To inspect a theme in the built browser dashboard:
+
+```sh
+pnpm run build
+pnpm start -- ./path/to/theme
+```
+
+On PowerShell, quote paths containing spaces:
+
+```powershell
+pnpm start -- "C:\path to\theme"
+```
+
+The environment variable form is also supported:
+
+```powershell
+$env:MUXPREVIEW_THEME_PATH = "C:\path\to\theme"
+pnpm start
+```
+
+Open `http://127.0.0.1:4174`.
+
+For muxpreview application development, run the API and Vite processes in
+separate terminals:
+
+```sh
+pnpm run dev:server -- ./path/to/theme
+```
+
+```sh
+pnpm run dev
+```
+
+Vite proxies `/api` requests to the local server. After a build, the package
+executable can also be invoked as:
 
 ```sh
 node dist/cli/index.js inspect ./path/to/theme
 ```
 
-Browser rendering and live reload are intentionally deferred.
+Visual theme rendering and theme-file live reload remain intentionally
+deferred.

@@ -9,10 +9,12 @@
   },
   "scripts": {
     "dev": "vite --configLoader runner",
+    "dev:server": "tsx server/index.ts",
     "build": "npm run build:cli && npm run build:app",
     "build:app": "tsc -p tsconfig.app.json && vite build --configLoader runner",
     "build:cli": "tsc -p tsconfig.cli.json",
     "inspect": "tsx cli/index.ts inspect",
+    "start": "node dist/server/index.js",
     "test": "vitest run --root . --configLoader runner"
   },
   "engines": {

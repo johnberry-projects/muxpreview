@@ -18,6 +18,15 @@ body {
   min-height: 100vh;
 }
 
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: #f3bd3d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .app-shell {
   display: grid;
   min-height: 100vh;
@@ -25,7 +34,7 @@ body {
   padding: 2rem;
 }
 
-.app-shell section {
+.status-panel {
   width: min(40rem, 100%);
   padding: 2rem;
   border: 1px solid #2b333d;
@@ -33,20 +42,128 @@ body {
   background: #171c22;
 }
 
-.app-shell h1 {
+.status-panel h1 {
   margin: 0 0 1rem;
 }
 
-.app-shell p {
+.status-panel p {
   color: #aeb8c4;
   line-height: 1.6;
 }
 
-.app-shell .eyebrow {
-  margin: 0 0 0.5rem;
-  color: #f3bd3d;
-  font-size: 0.75rem;
+.inspection-shell {
+  width: min(68rem, 100%);
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.inspection-header {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #2b333d;
+}
+
+.inspection-header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.theme-path {
+  margin: 0.75rem 0 0;
+  color: #aeb8c4;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.inspection-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.inspection-stat,
+.inspection-section {
+  border: 1px solid #2b333d;
+  border-radius: 0.75rem;
+  background: #171c22;
+}
+
+.inspection-stat {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1.25rem;
+}
+
+.inspection-stat strong {
+  font-size: 2rem;
+}
+
+.inspection-stat span,
+.empty-state {
+  color: #aeb8c4;
+}
+
+.inspection-section {
+  margin-top: 1rem;
+  padding: 1.5rem;
+}
+
+.inspection-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+}
+
+.tag-list,
+.file-list,
+.warning-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-list li {
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  color: #11151a;
+  background: #f3bd3d;
+  font-size: 0.875rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+}
+
+.file-list {
+  display: grid;
+  gap: 0.65rem;
+  color: #cbd3dc;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+.file-list li {
+  overflow-wrap: anywhere;
+}
+
+.warning-list {
+  display: grid;
+  gap: 0.75rem;
+  color: #f2c879;
+}
+
+.empty-state {
+  margin: 0;
+}
+
+@media (max-width: 36rem) {
+  .inspection-shell {
+    padding: 2rem 1rem;
+  }
+
+  .inspection-stats {
+    grid-template-columns: 1fr;
+  }
 }
