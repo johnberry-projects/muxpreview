@@ -16,6 +16,7 @@ export interface ClassifiedThemePath {
   assetKind?: ThemeAssetKind;
   isKnownAuxiliary: boolean;
   isScheme: boolean;
+  isWallpaper: boolean;
   resolution?: {
     name: string;
     width: number;
@@ -37,6 +38,7 @@ export function classifyThemePath(
     return {
       isKnownAuxiliary: false,
       isScheme: true,
+      isWallpaper: false,
       resolution,
       screenId: file.fileName.slice(0, -file.extension.length)
     };
@@ -47,6 +49,7 @@ export function classifyThemePath(
       assetKind: "font",
       isKnownAuxiliary: false,
       isScheme: false,
+      isWallpaper: false,
       resolution
     };
   }
@@ -56,6 +59,7 @@ export function classifyThemePath(
       assetKind: "glyph",
       isKnownAuxiliary: false,
       isScheme: false,
+      isWallpaper: false,
       resolution
     };
   }
@@ -65,6 +69,8 @@ export function classifyThemePath(
       assetKind: "image",
       isKnownAuxiliary: false,
       isScheme: false,
+      isWallpaper:
+        lowerSegments.includes("image") && lowerSegments.includes("wall"),
       resolution
     };
   }
@@ -73,6 +79,7 @@ export function classifyThemePath(
     assetKind: isKnownFile(file, lowerSegments) ? undefined : "unknown",
     isKnownAuxiliary: isKnownFile(file, lowerSegments),
     isScheme: false,
+    isWallpaper: false,
     resolution
   };
 }

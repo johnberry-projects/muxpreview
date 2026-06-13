@@ -1,5 +1,9 @@
+import { useState } from "react";
+
 import type { ThemeInspectionResult } from "../../core/model";
 import { InspectionStat } from "../components/InspectionStat";
+import { ResolutionSelector } from "../components/ResolutionSelector";
+import { WallpaperPreview } from "../components/WallpaperPreview";
 import { WarningList } from "../components/WarningList";
 
 interface ThemeInspectionScreenProps {
@@ -9,6 +13,14 @@ interface ThemeInspectionScreenProps {
 export function ThemeInspectionScreen({
   inspection,
 }: ThemeInspectionScreenProps) {
+  const [selectedResolutionName, setSelectedResolutionName] = useState(
+    inspection.resolutions[0]?.name ?? "",
+  );
+  const selectedResolution =
+    inspection.resolutions.find(
+      (resolution) => resolution.name === selectedResolutionName,
+    ) ?? inspection.resolutions[0];
+
   return (
     <main className="inspection-shell">
       <header className="inspection-header">
@@ -21,6 +33,30 @@ export function ThemeInspectionScreen({
         <InspectionStat label="Images" value={inspection.assets.images.length} />
         <InspectionStat label="Glyphs" value={inspection.assets.glyphs.length} />
         <InspectionStat label="Fonts" value={inspection.assets.fonts.length} />
+      </section>
+
+      <section className="inspection-section wallpaper-section">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Wallpaper preview</p>
+            <h2>Resolution background</h2>
+          </div>
+          {selectedResolution && (
+            <ResolutionSelector
+              resolutions={inspection.resolutions}
+              selectedResolution={selectedResolution.name}
+              onChange={setSelectedResolutionName}
+            />
+          )}
+        </div>
+
+        {selectedResolution ? (
+          <WallpaperPreview resolution={selectedResolution} />
+        ) : (
+          <p className="empty-state">
+            No resolution folders are available for preview.
+          </p>
+        )}
       </section>
 
       <section className="inspection-section">

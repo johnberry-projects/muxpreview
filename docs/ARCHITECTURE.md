@@ -672,6 +672,12 @@ existing inspection model without introducing an otherwise unused protocol
 layer. This route is transitional and should be versioned before use by a
 public CLI contract or showroom.
 
+Milestone 3 adds
+`GET /api/theme-wallpaper?resolution=<detected-resolution>`. The server resolves
+the response from the cached inspection result rather than accepting a local
+path from the browser. Only files classified under a detected resolution's
+`image/wall/` directory can be served through this route.
+
 ### 10.3 Asset serving
 
 The API should map opaque asset IDs to authorized files. It should not accept

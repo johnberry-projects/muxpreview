@@ -29,4 +29,17 @@ describe("classifyThemePath", () => {
 
     expect(result.assetKind).toBe("unknown");
   });
+
+  it("detects resolution wallpaper images", () => {
+    const result = classifyThemePath({
+      relativePath: "640x480/image/wall/default.png",
+      fileName: "default.png",
+      extension: ".png",
+      size: 42
+    });
+
+    expect(result.assetKind).toBe("image");
+    expect(result.isWallpaper).toBe(true);
+    expect(result.resolution?.name).toBe("640x480");
+  });
 });

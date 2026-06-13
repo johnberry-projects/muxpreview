@@ -15,13 +15,15 @@ The theme inspection foundation and browser inspection iteration now include:
 - `GET /api/theme-inspection`, using the existing inspection service
 - a browser dashboard for paths, resolutions, schemes, asset counts, and
   warnings
+- resolution-aware discovery and preview of real `image/wall/` assets
+- a restricted wallpaper endpoint that serves only inspected candidates
 - loading and actionable configuration/error states
 - build and test tooling
 
 This iteration deliberately does not include:
 
 - scheme parsing or merge rules
-- browser theme rendering
+- full browser theme rendering
 - hot reload or filesystem watching
 - `.muxthm` package loading
 
@@ -31,8 +33,8 @@ independent of React.
 
 ### Browser inspection decisions and limits
 
-- The server uses `MUXPREVIEW_THEME_PATH` as its only initial theme selection
-  mechanism.
+- The server accepts a positional theme path and falls back to
+  `MUXPREVIEW_THEME_PATH`.
 - The built app and API share one loopback server. During Vite development,
   Vite proxies `/api` to a separately started server process.
 - The API currently returns the absolute configured theme path because this
@@ -44,6 +46,20 @@ independent of React.
   more than the local application.
 - Browser inspection does not establish any new claim about muOS behavior; it
   presents scanner observations and existing warnings only.
+
+### Wallpaper preview decisions and limits
+
+- Wallpaper discovery is based on the observed
+  `<resolution>/image/wall/<file>` structure.
+- Every detected candidate remains in the inspection model.
+- `default.*` is preferred when present. Otherwise, muxpreview selects the
+  first relative path deterministically; this is a preview convention, not a
+  verified muOS runtime rule.
+- Root-level wallpapers are not assigned to resolutions because the available
+  evidence does not establish root-to-resolution fallback behavior.
+- The preview preserves the selected resolution's aspect ratio and displays
+  the source image without rendering muxlaunch, muxplore, scheme values, or
+  other interface layers.
 
 ## 1. Roadmap principles
 

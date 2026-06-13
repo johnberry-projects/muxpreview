@@ -1,20 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { ThemeInspectionService } from "../core";
-import { NodeThemeScanner } from "./node-theme-scanner";
+import type { ThemeInspectionProvider } from "./theme-inspection-provider";
 
 export const THEME_INSPECTION_ENDPOINT = "/api/theme-inspection";
 
-export interface ThemeInspectionApiOptions {
-  themePath?: string;
-}
-
 export function createThemeInspectionApi(
-  options: ThemeInspectionApiOptions = {},
+  inspectionProvider: ThemeInspectionProvider,
 ) {
-  const inspectionService = new ThemeInspectionService(new NodeThemeScanner());
-  const themePath = options.themePath ?? process.env.MUXPREVIEW_THEME_PATH;
-
   return async function handleThemeInspectionRequest(
     request: IncomingMessage,
     response: ServerResponse,
@@ -31,7 +23,7 @@ export function createThemeInspectionApi(
       return true;
     }
 
-    if (!themePath) {
+    if (!inspectionProvider.themePath) {
       sendJson(response, 503, {
         error:
           "No theme path is configured. Pass one when starting the server or set MUXPREVIEW_THEME_PATH.",
@@ -40,7 +32,7 @@ export function createThemeInspectionApi(
     }
 
     try {
-      const inspection = await inspectionService.inspect(themePath);
+      const inspection = await inspectionProvider.getInspection();
       sendJson(response, 200, inspection);
     } catch (error) {
       const message =

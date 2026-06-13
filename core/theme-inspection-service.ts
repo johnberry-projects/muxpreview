@@ -52,9 +52,19 @@ export class ThemeInspectionService {
 
       assets[assetGroupKey(classification.assetKind)].push(asset);
       resolution?.assets[assetGroupKey(classification.assetKind)].push(asset);
+
+      if (classification.isWallpaper && resolution) {
+        resolution.wallpapers.push(asset);
+      }
     }
 
     const sortedResolutions = [...resolutions.values()].sort(compareResolutions);
+
+    for (const resolution of sortedResolutions) {
+      resolution.wallpapers.sort(compareWallpaperCandidates);
+      resolution.wallpaper = resolution.wallpapers[0];
+    }
+
     const warnings = createInspectionWarnings(
       sortedResolutions,
       schemeFiles,
@@ -96,7 +106,8 @@ function getOrCreateResolution(
     ...resolution,
     relativePath: resolution.name,
     schemeFiles: [],
-    assets: createEmptyAssetGroup()
+    assets: createEmptyAssetGroup(),
+    wallpapers: []
   };
 
   resolutions.set(resolution.name, created);
@@ -123,4 +134,23 @@ function compareResolutions(
   right: ThemeResolution
 ): number {
   return left.width - right.width || left.height - right.height;
+}
+
+function compareWallpaperCandidates(
+  left: ThemeAsset,
+  right: ThemeAsset
+): number {
+  const leftIsDefault = isDefaultWallpaper(left);
+  const rightIsDefault = isDefaultWallpaper(right);
+
+  if (leftIsDefault !== rightIsDefault) {
+    return leftIsDefault ? -1 : 1;
+  }
+
+  return left.relativePath.localeCompare(right.relativePath);
+}
+
+function isDefaultWallpaper(asset: ThemeAsset): boolean {
+  return asset.fileName.slice(0, -asset.extension.length).toLowerCase() ===
+    "default";
 }

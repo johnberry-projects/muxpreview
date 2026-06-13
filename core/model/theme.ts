@@ -30,6 +30,8 @@ export interface ThemeResolution {
   relativePath: string;
   schemeFiles: ThemeSchemeFile[];
   assets: ThemeAssetGroup;
+  wallpapers: ThemeAsset[];
+  wallpaper?: ThemeAsset;
 }
 
 export type ThemeInspectionWarningCode =
