@@ -4,7 +4,8 @@ Local development server and live preview tool for muOS themes. Build, test,
 and iterate on themes without a console.
 
 The current build provides a TypeScript theme scanner, CLI, local browser
-inspection dashboard, and resolution-aware wallpaper preview.
+inspection dashboard, resolution-aware wallpaper preview, and read-only Scheme
+Explorer.
 
 ```sh
 pnpm install
@@ -53,5 +54,6 @@ node dist/cli/index.js inspect ./path/to/theme
 ```
 
 The dashboard can switch among detected resolutions and display real
-`image/wall/` assets. Full muOS screen rendering and theme-file live reload
-remain intentionally deferred.
+`image/wall/` assets. It can also browse scheme sections, keys, and raw text
+values without interpreting their meaning. Full muOS screen rendering and
+theme-file live reload remain intentionally deferred.

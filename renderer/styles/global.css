@@ -103,6 +103,12 @@ body {
   color: #aeb8c4;
 }
 
+.inspection-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1.5rem 0;
+}
+
 .inspection-section {
   margin-top: 1rem;
   padding: 1.5rem;
@@ -126,7 +132,9 @@ body {
   margin-bottom: 0;
 }
 
-.resolution-selector {
+.resolution-selector,
+.scheme-file-selector,
+.scheme-search {
   display: grid;
   gap: 0.4rem;
   min-width: 9rem;
@@ -137,7 +145,9 @@ body {
   text-transform: uppercase;
 }
 
-.resolution-selector select {
+.resolution-selector select,
+.scheme-file-selector select,
+.scheme-search input {
   width: 100%;
   padding: 0.6rem 2rem 0.6rem 0.75rem;
   border: 1px solid #3a4551;
@@ -147,6 +157,109 @@ body {
   font: inherit;
   letter-spacing: normal;
   text-transform: none;
+}
+
+.scheme-file-selector {
+  min-width: 13rem;
+}
+
+.scheme-search {
+  margin-bottom: 1rem;
+}
+
+.scheme-search input {
+  padding-right: 0.75rem;
+}
+
+.scheme-metadata {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  color: #8995a3;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.scheme-sections {
+  display: grid;
+  gap: 1rem;
+}
+
+.scheme-section {
+  overflow: hidden;
+  border: 1px solid #2b333d;
+  border-radius: 0.5rem;
+  background: #11151a;
+}
+
+.scheme-section h3,
+.scheme-issues h3 {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+.scheme-section h3 {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2b333d;
+  color: #f3bd3d;
+}
+
+.scheme-section dl {
+  margin: 0;
+}
+
+.scheme-section dl div {
+  display: grid;
+  grid-template-columns: minmax(12rem, 2fr) minmax(8rem, 1fr);
+  border-bottom: 1px solid #222a33;
+}
+
+.scheme-section dl div:last-child {
+  border-bottom: 0;
+}
+
+.scheme-section dt,
+.scheme-section dd {
+  margin: 0;
+  padding: 0.65rem 1rem;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.scheme-section dt {
+  color: #cbd3dc;
+}
+
+.scheme-section dd {
+  border-left: 1px solid #222a33;
+  color: #aeb8c4;
+}
+
+.scheme-message {
+  margin: 1rem 0 0;
+  color: #aeb8c4;
+}
+
+.scheme-error {
+  color: #f2c879;
+}
+
+.scheme-issues {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #66512a;
+  border-radius: 0.5rem;
+  color: #f2c879;
+  background: #211c13;
+}
+
+.scheme-issues ul {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
 }
 
 .wallpaper-preview {
@@ -254,12 +367,24 @@ body {
   }
 
   .section-heading,
+  .scheme-metadata,
   .wallpaper-preview figcaption {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .resolution-selector {
+  .inspection-controls,
+  .resolution-selector,
+  .scheme-file-selector {
     width: 100%;
+  }
+
+  .scheme-section dl div {
+    grid-template-columns: 1fr;
+  }
+
+  .scheme-section dd {
+    padding-top: 0;
+    border-left: 0;
   }
 }

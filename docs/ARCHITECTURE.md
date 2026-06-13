@@ -678,6 +678,12 @@ the response from the cached inspection result rather than accepting a local
 path from the browser. Only files classified under a detected resolution's
 `image/wall/` directory can be served through this route.
 
+Milestone 4 adds `GET /api/theme-scheme?path=<inspected-relative-path>`. The
+server validates the requested path against the cached inspection result,
+reads the authorized file, and passes its text to the framework-agnostic core
+parser. The response preserves source order and raw values; it is not an
+effective or merged scheme.
+
 ### 10.3 Asset serving
 
 The API should map opaque asset IDs to authorized files. It should not accept

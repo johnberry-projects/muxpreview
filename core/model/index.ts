@@ -8,3 +8,10 @@ export type {
   ThemeResolution,
   ThemeSchemeFile
 } from "./theme";
+export type {
+  ParsedThemeScheme,
+  ThemeSchemeEntry,
+  ThemeSchemeParseIssue,
+  ThemeSchemeSection,
+  ThemeSchemeSource
+} from "./scheme";

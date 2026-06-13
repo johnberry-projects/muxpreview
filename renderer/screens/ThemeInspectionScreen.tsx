@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { ThemeInspectionResult } from "../../core/model";
 import { InspectionStat } from "../components/InspectionStat";
 import { ResolutionSelector } from "../components/ResolutionSelector";
+import { SchemeExplorer } from "../components/SchemeExplorer";
 import { WallpaperPreview } from "../components/WallpaperPreview";
 import { WarningList } from "../components/WarningList";
 
@@ -35,19 +36,22 @@ export function ThemeInspectionScreen({
         <InspectionStat label="Fonts" value={inspection.assets.fonts.length} />
       </section>
 
+      {selectedResolution && (
+        <section className="inspection-controls" aria-label="Preview context">
+          <ResolutionSelector
+            resolutions={inspection.resolutions}
+            selectedResolution={selectedResolution.name}
+            onChange={setSelectedResolutionName}
+          />
+        </section>
+      )}
+
       <section className="inspection-section wallpaper-section">
         <div className="section-heading">
           <div>
             <p className="eyebrow">Wallpaper preview</p>
             <h2>Resolution background</h2>
           </div>
-          {selectedResolution && (
-            <ResolutionSelector
-              resolutions={inspection.resolutions}
-              selectedResolution={selectedResolution.name}
-              onChange={setSelectedResolutionName}
-            />
-          )}
         </div>
 
         {selectedResolution ? (
@@ -58,6 +62,13 @@ export function ThemeInspectionScreen({
           </p>
         )}
       </section>
+
+      {selectedResolution && (
+        <SchemeExplorer
+          resolution={selectedResolution}
+          schemeFiles={inspection.schemeFiles}
+        />
+      )}
 
       <section className="inspection-section">
         <h2>Resolutions</h2>

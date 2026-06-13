@@ -4,6 +4,7 @@ import path from "node:path";
 import { createStaticAppHandler } from "./static-app";
 import { createThemeInspectionApi } from "./theme-inspection-api";
 import { ThemeInspectionProvider } from "./theme-inspection-provider";
+import { createThemeSchemeApi } from "./theme-scheme-api";
 import { createThemeWallpaperApi } from "./theme-wallpaper-api";
 
 export interface MuxpreviewServerOptions {
@@ -18,6 +19,7 @@ export function createMuxpreviewServer(
     options.themePath ?? process.env.MUXPREVIEW_THEME_PATH,
   );
   const handleThemeInspection = createThemeInspectionApi(inspectionProvider);
+  const handleThemeScheme = createThemeSchemeApi(inspectionProvider);
   const handleThemeWallpaper = createThemeWallpaperApi(inspectionProvider);
   const handleStaticApp = createStaticAppHandler(
     options.staticRoot ?? path.resolve(process.cwd(), "dist-app"),
@@ -26,6 +28,10 @@ export function createMuxpreviewServer(
   return createServer(async (request, response) => {
     try {
       if (await handleThemeInspection(request, response)) {
+        return;
+      }
+
+      if (await handleThemeScheme(request, response)) {
         return;
       }
 

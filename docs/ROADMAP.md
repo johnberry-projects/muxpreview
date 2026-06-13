@@ -17,18 +17,21 @@ The theme inspection foundation and browser inspection iteration now include:
   warnings
 - resolution-aware discovery and preview of real `image/wall/` assets
 - a restricted wallpaper endpoint that serves only inspected candidates
+- read-only parsing of scheme sections, keys, values, and source lines
+- a resolution-aware Scheme Explorer with scheme selection and filtering
+- a restricted scheme endpoint that reads only inspected scheme files
 - loading and actionable configuration/error states
 - build and test tooling
 
 This iteration deliberately does not include:
 
-- scheme parsing or merge rules
+- scheme value interpretation or merge rules
 - full browser theme rendering
 - hot reload or filesystem watching
 - `.muxthm` package loading
 
 The next iteration should add focused API and browser integration tests, then
-move into scheme parsing and effective-value provenance. The scanner remains
+move into scheme layering and effective-value provenance. The scanner remains
 independent of React.
 
 ### Browser inspection decisions and limits
@@ -58,8 +61,22 @@ independent of React.
 - Root-level wallpapers are not assigned to resolutions because the available
   evidence does not establish root-to-resolution fallback behavior.
 - The preview preserves the selected resolution's aspect ratio and displays
-  the source image without rendering muxlaunch, muxplore, scheme values, or
-  other interface layers.
+  the source image without applying scheme values or rendering muxlaunch,
+  muxplore, or other interface layers.
+
+### Scheme Explorer decisions and limits
+
+- Scheme parsing is a pure core operation over text supplied by the server.
+- The parser recognizes section headers and splits assignments at the first
+  `=`. Values remain strings, with both trimmed and original post-separator
+  text retained.
+- Blank lines and full-line `;` or `#` comments are ignored. Unsupported lines
+  are preserved as parse issues with line numbers.
+- Duplicate sections and duplicate keys remain in source order.
+- The browser shows shared root schemes alongside schemes for the selected
+  resolution.
+- The explorer does not merge `global.ini`, `default.ini`, or screen-specific
+  files and does not claim any value semantics.
 
 ## 1. Roadmap principles
 

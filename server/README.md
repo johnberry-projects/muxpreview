@@ -4,6 +4,8 @@ The local Node server binds to `127.0.0.1` and exposes:
 
 - `GET /api/theme-inspection`, backed by the existing
   `ThemeInspectionService` and `NodeThemeScanner`
+- `GET /api/theme-scheme?path=640x480%2Fscheme%2Fmuxlaunch.ini`, returning a
+  parsed read-only scheme document
 - `GET /api/theme-wallpaper?resolution=640x480`, serving the selected
   resolution wallpaper
 - the built React application from `dist-app/`
@@ -25,3 +27,8 @@ Wallpaper responses are restricted to files classified during inspection under
 `<resolution>/image/wall/`. The server prefers `default.*`; when it is absent,
 the first candidate in relative-path order is used. That fallback is a
 muxpreview convention, not a verified muOS selection rule.
+
+Scheme responses are restricted to files already classified as scheme files by
+the inspection service. Parsing extracts section names, keys, text values, and
+line numbers. It does not interpret types, apply defaults, merge files, or
+resolve effective values.
