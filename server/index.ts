@@ -1,6 +1,7 @@
 import { createServer, type Server } from "node:http";
 import path from "node:path";
 
+import { createMuxlaunchRenderModelApi } from "./muxlaunch-render-model-api";
 import { createStaticAppHandler } from "./static-app";
 import { createThemeGlyphApi } from "./theme-glyph-api";
 import { createThemeInspectionApi } from "./theme-inspection-api";
@@ -19,6 +20,8 @@ export function createMuxpreviewServer(
   const inspectionProvider = new ThemeInspectionProvider(
     options.themePath ?? process.env.MUXPREVIEW_THEME_PATH,
   );
+  const handleMuxlaunchRenderModel =
+    createMuxlaunchRenderModelApi(inspectionProvider);
   const handleThemeGlyph = createThemeGlyphApi(inspectionProvider);
   const handleThemeInspection = createThemeInspectionApi(inspectionProvider);
   const handleThemeScheme = createThemeSchemeApi(inspectionProvider);
@@ -29,6 +32,10 @@ export function createMuxpreviewServer(
 
   return createServer(async (request, response) => {
     try {
+      if (await handleMuxlaunchRenderModel(request, response)) {
+        return;
+      }
+
       if (await handleThemeGlyph(request, response)) {
         return;
       }
@@ -42,6 +49,15 @@ export function createMuxpreviewServer(
       }
 
       if (await handleThemeWallpaper(request, response)) {
+        return;
+      }
+
+      if (isApiRequest(request.url)) {
+        response.writeHead(404, {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+        });
+        response.end(JSON.stringify({ error: "API endpoint not found." }));
         return;
       }
 
@@ -84,4 +100,10 @@ function readPort(value: string | undefined): number {
   }
 
   return port;
+}
+
+function isApiRequest(requestUrl: string | undefined): boolean {
+  return new URL(requestUrl ?? "/", "http://localhost").pathname.startsWith(
+    "/api/",
+  );
 }

@@ -2,11 +2,16 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
+  MuxlaunchRenderModel,
   ParsedThemeScheme,
   ThemeInspectionResult,
   ThemeSchemeFile
 } from "../core/model";
-import { parseThemeScheme, ThemeInspectionService } from "../core";
+import {
+  mapMuxlaunchScheme,
+  parseThemeScheme,
+  ThemeInspectionService
+} from "../core";
 import { NodeThemeScanner } from "./node-theme-scanner";
 
 export class ThemeInspectionProvider {
@@ -40,6 +45,12 @@ export class ThemeInspectionProvider {
     const schemePromise = this.readScheme(schemeFile);
     this.schemePromises.set(schemeFile.relativePath, schemePromise);
     return schemePromise;
+  }
+
+  async getMuxlaunchRenderModel(
+    schemeFile: ThemeSchemeFile,
+  ): Promise<MuxlaunchRenderModel> {
+    return mapMuxlaunchScheme(await this.getScheme(schemeFile));
   }
 
   private async readScheme(
