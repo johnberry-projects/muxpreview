@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { ThemeInspectionResult } from "../../core/model";
+import { GlyphExplorer } from "../components/GlyphExplorer";
 import { InspectionStat } from "../components/InspectionStat";
 import { ResolutionSelector } from "../components/ResolutionSelector";
 import { SchemeExplorer } from "../components/SchemeExplorer";
@@ -67,6 +68,13 @@ export function ThemeInspectionScreen({
         <SchemeExplorer
           resolution={selectedResolution}
           schemeFiles={inspection.schemeFiles}
+        />
+      )}
+
+      {selectedResolution && (
+        <GlyphExplorer
+          resolution={selectedResolution}
+          glyphs={inspection.assets.glyphs}
         />
       )}
 

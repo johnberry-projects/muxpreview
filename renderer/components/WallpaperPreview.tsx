@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import type { ThemeResolution } from "../../core/model";
+import { VirtualDisplayCanvas } from "./VirtualDisplayCanvas";
 
 interface WallpaperPreviewProps {
   resolution: ThemeResolution;
@@ -28,20 +29,14 @@ export function WallpaperPreview({ resolution }: WallpaperPreviewProps) {
 
   return (
     <figure className="wallpaper-preview">
-      <div
-        className="wallpaper-canvas"
-        style={{ aspectRatio: `${resolution.width} / ${resolution.height}` }}
+      <VirtualDisplayCanvas
+        resolution={resolution}
+        wallpaperUrl={failed ? undefined : wallpaperUrl}
+        wallpaperAlt={`${resolution.name} theme wallpaper`}
+        onWallpaperError={() => setFailed(true)}
       >
-        {failed ? (
-          <p>Unable to load this wallpaper from the local server.</p>
-        ) : (
-          <img
-            src={wallpaperUrl}
-            alt={`${resolution.name} theme wallpaper`}
-            onError={() => setFailed(true)}
-          />
-        )}
-      </div>
+        {failed && <p>Unable to load this wallpaper from the local server.</p>}
+      </VirtualDisplayCanvas>
       <figcaption>
         <span>{resolution.wallpaper.relativePath}</span>
         {resolution.wallpapers.length > 1 && (
