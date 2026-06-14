@@ -15,3 +15,11 @@ export type {
   ThemeSchemeSection,
   ThemeSchemeSource
 } from "./scheme";
+export type {
+  MuxlaunchColorModel,
+  MuxlaunchLayoutModel,
+  MuxlaunchMappedValue,
+  MuxlaunchMappedValueKind,
+  MuxlaunchRenderModel,
+  MuxlaunchUnmappedValue
+} from "./muxlaunch";

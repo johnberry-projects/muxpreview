@@ -1,6 +1,12 @@
 export { ThemeInspectionService } from "./theme-inspection-service";
-export { parseThemeScheme } from "./parser";
+export { mapMuxlaunchScheme, parseThemeScheme } from "./parser";
 export type {
+  MuxlaunchColorModel,
+  MuxlaunchLayoutModel,
+  MuxlaunchMappedValue,
+  MuxlaunchMappedValueKind,
+  MuxlaunchRenderModel,
+  MuxlaunchUnmappedValue,
   ParsedThemeScheme,
   ThemeSchemeEntry,
   ThemeSchemeParseIssue,
