@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import type { ThemeInspectionResult } from "../../core/model";
+import type {
+  MuxlaunchRenderModel,
+  ThemeInspectionResult,
+} from "../../core/model";
 import { GlyphExplorer } from "../components/GlyphExplorer";
 import { InspectionStat } from "../components/InspectionStat";
+import { MuxlaunchMappingPanel } from "../components/MuxlaunchMappingPanel";
 import { ResolutionSelector } from "../components/ResolutionSelector";
 import { SchemeExplorer } from "../components/SchemeExplorer";
 import { StaticMuxlaunchPreview } from "../components/StaticMuxlaunchPreview";
@@ -22,10 +26,74 @@ export function ThemeInspectionScreen({
   const [selectedResolutionName, setSelectedResolutionName] = useState(
     inspection.resolutions[0]?.name ?? "",
   );
+  const [muxlaunchModel, setMuxlaunchModel] =
+    useState<MuxlaunchRenderModel>();
+  const [muxlaunchError, setMuxlaunchError] = useState<string>();
+  const [muxlaunchLoading, setMuxlaunchLoading] = useState(false);
   const selectedResolution =
     inspection.resolutions.find(
       (resolution) => resolution.name === selectedResolutionName,
     ) ?? inspection.resolutions[0];
+
+  useEffect(() => {
+    if (!selectedResolution) {
+      return;
+    }
+
+    const controller = new AbortController();
+    setMuxlaunchModel(undefined);
+    setMuxlaunchError(undefined);
+    setMuxlaunchLoading(true);
+
+    async function loadMuxlaunchModel() {
+      try {
+        const response = await fetch(
+          `/api/muxlaunch-render-model?resolution=${encodeURIComponent(
+            selectedResolution.name,
+          )}`,
+          { signal: controller.signal },
+        );
+        const contentType = response.headers.get("content-type") ?? "";
+
+        if (!contentType.toLowerCase().includes("json")) {
+          throw new Error(
+            response.ok
+              ? "The muxlaunch mapping endpoint returned an unexpected response."
+              : `The muxlaunch mapping request failed with status ${response.status}.`,
+          );
+        }
+
+        const body: unknown = await response.json();
+
+        if (!response.ok) {
+          throw new Error(readApiError(body));
+        }
+
+        if (!isMuxlaunchRenderModel(body)) {
+          throw new Error(
+            "The muxlaunch mapping endpoint returned invalid JSON data.",
+          );
+        }
+
+        setMuxlaunchModel(body);
+      } catch (loadError) {
+        if (!controller.signal.aborted) {
+          setMuxlaunchError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Unable to map muxlaunch scheme.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setMuxlaunchLoading(false);
+        }
+      }
+    }
+
+    void loadMuxlaunchModel();
+    return () => controller.abort();
+  }, [selectedResolution]);
 
   return (
     <main className="inspection-shell">
@@ -84,6 +152,7 @@ export function ThemeInspectionScreen({
             <StaticMuxlaunchPreview
               resolution={selectedResolution}
               glyphs={inspection.assets.glyphs}
+              renderModel={muxlaunchModel}
             />
           )
         ) : (
@@ -92,6 +161,14 @@ export function ThemeInspectionScreen({
           </p>
         )}
       </section>
+
+      {selectedResolution && (
+        <MuxlaunchMappingPanel
+          model={muxlaunchModel}
+          loading={muxlaunchLoading}
+          error={muxlaunchError}
+        />
+      )}
 
       {selectedResolution && (
         <SchemeExplorer
@@ -136,4 +213,27 @@ export function ThemeInspectionScreen({
       <WarningList warnings={inspection.warnings} />
     </main>
   );
+}
+
+function isMuxlaunchRenderModel(body: unknown): body is MuxlaunchRenderModel {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "sourceSchemePath" in body &&
+    "mappedValues" in body &&
+    "unmappedValues" in body
+  );
+}
+
+function readApiError(body: unknown): string {
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "error" in body &&
+    typeof body.error === "string"
+  ) {
+    return body.error;
+  }
+
+  return "Unable to map muxlaunch scheme.";
 }

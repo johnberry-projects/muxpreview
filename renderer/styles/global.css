@@ -283,6 +283,7 @@ body {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(0.5rem, 2.5vw, 1.5rem);
   width: min(78%, 42rem);
+  color: #fff;
 }
 
 .muxlaunch-static-item {
@@ -291,7 +292,7 @@ body {
   min-width: 0;
   padding: clamp(0.45rem, 1.5vw, 0.9rem);
   border-radius: 0.5rem;
-  color: #fff;
+  color: inherit;
   background: rgb(9 11 14 / 64%);
   text-align: center;
   text-shadow: 0 1px 3px #000;
@@ -325,6 +326,142 @@ body {
   padding-top: 0.75rem;
   color: #f2c879;
   font-size: 0.8rem;
+}
+
+.mapping-source {
+  max-width: 50%;
+  color: #8995a3;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.mapping-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mapping-summary span {
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  color: #cbd3dc;
+  background: #242c35;
+  font-size: 0.75rem;
+}
+
+.mapping-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mapping-group {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #2b333d;
+  border-radius: 0.5rem;
+  background: #11151a;
+}
+
+.mapping-group h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.mapping-group p {
+  margin: 0;
+  color: #8995a3;
+  font-size: 0.8rem;
+}
+
+.mapping-group dl {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.mapping-group dl div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.2rem 0.75rem;
+}
+
+.mapping-group dt,
+.mapping-group dd,
+.mapping-group small {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.mapping-group dt {
+  color: #cbd3dc;
+  font-size: 0.75rem;
+}
+
+.mapping-group dd {
+  margin: 0;
+  color: #f3bd3d;
+  font-size: 0.75rem;
+}
+
+.mapping-group small {
+  grid-column: 1 / -1;
+  color: #73808d;
+  font-size: 0.65rem;
+}
+
+.mapping-details {
+  margin-top: 1rem;
+  border: 1px solid #2b333d;
+  border-radius: 0.5rem;
+  background: #11151a;
+}
+
+.mapping-details summary {
+  padding: 0.8rem 1rem;
+  color: #cbd3dc;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.mapping-details p,
+.mapping-details ul,
+.mapping-table {
+  margin: 0;
+  padding: 0 1rem 1rem;
+}
+
+.mapping-details ul {
+  padding-left: 2.25rem;
+  color: #aeb8c4;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.mapping-table {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mapping-table div {
+  display: grid;
+  grid-template-columns: minmax(10rem, 2fr) minmax(6rem, 1fr) auto;
+  gap: 0.75rem;
+  color: #aeb8c4;
+  font-size: 0.75rem;
+}
+
+.mapping-table code {
+  color: #cbd3dc;
+  overflow-wrap: anywhere;
+}
+
+.mapping-table small {
+  color: #f2c879;
 }
 
 .virtual-display-canvas {
@@ -593,6 +730,20 @@ body {
   .muxlaunch-static-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: min(76%, 22rem);
+  }
+
+  .mapping-source {
+    max-width: none;
+    text-align: left;
+  }
+
+  .mapping-groups {
+    grid-template-columns: 1fr;
+  }
+
+  .mapping-table div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 
   .scheme-section dl div {
