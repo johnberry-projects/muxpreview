@@ -20,6 +20,10 @@ The theme inspection foundation and browser inspection iteration now include:
 - read-only parsing of scheme sections, keys, values, and source lines
 - a resolution-aware Scheme Explorer with scheme selection and filtering
 - a restricted scheme endpoint that reads only inspected scheme files
+- a reusable fixed-aspect virtual display canvas
+- responsive rendering of shared and resolution-specific glyph assets
+- glyph selection with source, format, size, and path metadata
+- a restricted glyph endpoint that serves only inspected glyph files
 - loading and actionable configuration/error states
 - build and test tooling
 
@@ -77,6 +81,20 @@ independent of React.
   resolution.
 - The explorer does not merge `global.ini`, `default.ini`, or screen-specific
   files and does not claim any value semantics.
+
+### Glyph rendering decisions and limits
+
+- Glyph inventory continues to come from the existing inspection service.
+- The selected resolution shows both root-level shared glyphs and glyphs
+  explicitly located under that resolution.
+- Shared and resolution-specific files are not deduplicated or assigned
+  precedence because runtime fallback behavior remains unverified.
+- Glyphs are shown in a centered responsive grid over the selected wallpaper
+  inside the fixed-aspect virtual display.
+- Selection and highlighting belong only to the developer explorer. They do
+  not model muOS focus, navigation, or screen state.
+- Glyph image dimensions and recolouring remain future work because the
+  current scanner records path, format, byte size, and resolution only.
 
 ## 1. Roadmap principles
 

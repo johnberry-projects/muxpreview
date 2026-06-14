@@ -684,6 +684,14 @@ reads the authorized file, and passes its text to the framework-agnostic core
 parser. The response preserves source order and raw values; it is not an
 effective or merged scheme.
 
+The glyph rendering iteration adds
+`GET /api/theme-glyph?path=<inspected-relative-path>`. Requests are matched
+against glyph descriptors in the cached inspection result before the server
+reads any file. The React renderer composes those opaque URLs over the same
+fixed-aspect virtual display used by wallpaper preview, proving that multiple
+real theme asset layers can share one canvas without introducing screen
+emulation.
+
 ### 10.3 Asset serving
 
 The API should map opaque asset IDs to authorized files. It should not accept

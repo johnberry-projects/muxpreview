@@ -5,7 +5,7 @@ and iterate on themes without a console.
 
 The current build provides a TypeScript theme scanner, CLI, local browser
 inspection dashboard, resolution-aware wallpaper preview, and read-only Scheme
-Explorer.
+Explorer. The virtual display can also render and inspect real theme glyphs.
 
 ```sh
 pnpm install
@@ -55,5 +55,6 @@ node dist/cli/index.js inspect ./path/to/theme
 
 The dashboard can switch among detected resolutions and display real
 `image/wall/` assets. It can also browse scheme sections, keys, and raw text
-values without interpreting their meaning. Full muOS screen rendering and
-theme-file live reload remain intentionally deferred.
+values without interpreting their meaning, and display shared plus
+resolution-specific glyphs in a selectable grid. Full muOS screen rendering
+and theme-file live reload remain intentionally deferred.
