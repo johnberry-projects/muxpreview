@@ -24,6 +24,7 @@ The theme inspection foundation and browser inspection iteration now include:
 - responsive rendering of shared and resolution-specific glyph assets
 - glyph selection with source, format, size, and path metadata
 - a restricted glyph endpoint that serves only inspected glyph files
+- a static muxlaunch fixture composed from real wallpaper and glyph assets
 - loading and actionable configuration/error states
 - build and test tooling
 
@@ -95,6 +96,20 @@ independent of React.
   not model muOS focus, navigation, or screen state.
 - Glyph image dimensions and recolouring remain future work because the
   current scanner records path, format, byte size, and resolution only.
+
+### Static muxlaunch preview decisions and limits
+
+- The preview uses four temporary fixture items: Explore, Favourites,
+  Applications, and Config.
+- It matches observed `muxlaunch` glyph basenames first. For the Favourites
+  fixture, the observed `collection.png` asset is an accepted alias.
+- Resolution-specific glyphs are preferred over shared glyphs as an explicit
+  muxpreview preview convention. This does not establish muOS runtime
+  precedence.
+- Missing matches fall back deterministically to unused muxlaunch glyphs, then
+  to other unused glyphs visible for the selected resolution.
+- Item positions, labels, sizing, and styling are hardcoded. No scheme values,
+  navigation state, or actual muxlaunch layout behavior are applied.
 
 ## 1. Roadmap principles
 

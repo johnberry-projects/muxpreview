@@ -692,6 +692,12 @@ fixed-aspect virtual display used by wallpaper preview, proving that multiple
 real theme asset layers can share one canvas without introducing screen
 emulation.
 
+The static muxlaunch iteration builds a renderer-only fixture on that canvas.
+It selects glyph descriptors already present in the inspection response and
+loads them through the existing glyph endpoint. Matching and fallback rules
+are deterministic preview policy, isolated from core parsing and explicitly
+separate from future scheme-driven screen rendering.
+
 ### 10.3 Asset serving
 
 The API should map opaque asset IDs to authorized files. It should not accept

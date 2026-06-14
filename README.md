@@ -6,6 +6,8 @@ and iterate on themes without a console.
 The current build provides a TypeScript theme scanner, CLI, local browser
 inspection dashboard, resolution-aware wallpaper preview, and read-only Scheme
 Explorer. The virtual display can also render and inspect real theme glyphs.
+It includes an explicitly approximate static muxlaunch fixture using real
+wallpaper and glyph assets.
 
 ```sh
 pnpm install
@@ -57,4 +59,5 @@ The dashboard can switch among detected resolutions and display real
 `image/wall/` assets. It can also browse scheme sections, keys, and raw text
 values without interpreting their meaning, and display shared plus
 resolution-specific glyphs in a selectable grid. Full muOS screen rendering
-and theme-file live reload remain intentionally deferred.
+and theme-file live reload remain intentionally deferred. The static muxlaunch
+mode uses temporary labels and positions rather than parsed layout values.

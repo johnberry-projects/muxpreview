@@ -5,6 +5,7 @@ import { GlyphExplorer } from "../components/GlyphExplorer";
 import { InspectionStat } from "../components/InspectionStat";
 import { ResolutionSelector } from "../components/ResolutionSelector";
 import { SchemeExplorer } from "../components/SchemeExplorer";
+import { StaticMuxlaunchPreview } from "../components/StaticMuxlaunchPreview";
 import { WallpaperPreview } from "../components/WallpaperPreview";
 import { WarningList } from "../components/WarningList";
 
@@ -15,6 +16,9 @@ interface ThemeInspectionScreenProps {
 export function ThemeInspectionScreen({
   inspection,
 }: ThemeInspectionScreenProps) {
+  const [previewMode, setPreviewMode] = useState<"wallpaper" | "muxlaunch">(
+    "wallpaper",
+  );
   const [selectedResolutionName, setSelectedResolutionName] = useState(
     inspection.resolutions[0]?.name ?? "",
   );
@@ -50,13 +54,38 @@ export function ThemeInspectionScreen({
       <section className="inspection-section wallpaper-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Wallpaper preview</p>
-            <h2>Resolution background</h2>
+            <p className="eyebrow">Virtual display</p>
+            <h2>
+              {previewMode === "wallpaper"
+                ? "Wallpaper preview"
+                : "Static muxlaunch preview"}
+            </h2>
           </div>
+          <label className="preview-mode-selector">
+            <span>Preview mode</span>
+            <select
+              value={previewMode}
+              onChange={(event) =>
+                setPreviewMode(
+                  event.target.value as "wallpaper" | "muxlaunch",
+                )
+              }
+            >
+              <option value="wallpaper">Wallpaper</option>
+              <option value="muxlaunch">Static muxlaunch</option>
+            </select>
+          </label>
         </div>
 
         {selectedResolution ? (
-          <WallpaperPreview resolution={selectedResolution} />
+          previewMode === "wallpaper" ? (
+            <WallpaperPreview resolution={selectedResolution} />
+          ) : (
+            <StaticMuxlaunchPreview
+              resolution={selectedResolution}
+              glyphs={inspection.assets.glyphs}
+            />
+          )
         ) : (
           <p className="empty-state">
             No resolution folders are available for preview.
