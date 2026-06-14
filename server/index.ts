@@ -2,6 +2,7 @@ import { createServer, type Server } from "node:http";
 import path from "node:path";
 
 import { createMuxlaunchRenderModelApi } from "./muxlaunch-render-model-api";
+import { createMuxlaunchVisualLayersApi } from "./muxlaunch-visual-layers-api";
 import { createStaticAppHandler } from "./static-app";
 import { createThemeGlyphApi } from "./theme-glyph-api";
 import { createThemeImageApi } from "./theme-image-api";
@@ -23,6 +24,8 @@ export function createMuxpreviewServer(
   );
   const handleMuxlaunchRenderModel =
     createMuxlaunchRenderModelApi(inspectionProvider);
+  const handleMuxlaunchVisualLayers =
+    createMuxlaunchVisualLayersApi(inspectionProvider);
   const handleThemeGlyph = createThemeGlyphApi(inspectionProvider);
   const handleThemeImage = createThemeImageApi(inspectionProvider);
   const handleThemeInspection = createThemeInspectionApi(inspectionProvider);
@@ -35,6 +38,10 @@ export function createMuxpreviewServer(
   return createServer(async (request, response) => {
     try {
       if (await handleMuxlaunchRenderModel(request, response)) {
+        return;
+      }
+
+      if (await handleMuxlaunchVisualLayers(request, response)) {
         return;
       }
 
@@ -59,11 +66,17 @@ export function createMuxpreviewServer(
       }
 
       if (isApiRequest(request.url)) {
+        const pathname = new URL(
+          request.url ?? "/",
+          "http://localhost",
+        ).pathname;
         response.writeHead(404, {
           "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "no-store",
         });
-        response.end(JSON.stringify({ error: "API endpoint not found." }));
+        response.end(
+          JSON.stringify({ error: `API endpoint not found: ${pathname}` }),
+        );
         return;
       }
 

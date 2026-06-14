@@ -2,19 +2,19 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { ThemeInspectionProvider } from "./theme-inspection-provider";
 
-export const MUXLAUNCH_RENDER_MODEL_ENDPOINT =
-  "/api/muxlaunch-render-model";
+export const MUXLAUNCH_VISUAL_LAYERS_ENDPOINT =
+  "/api/muxlaunch-visual-layers";
 
-export function createMuxlaunchRenderModelApi(
+export function createMuxlaunchVisualLayersApi(
   inspectionProvider: ThemeInspectionProvider,
 ) {
-  return async function handleMuxlaunchRenderModelRequest(
+  return async function handleMuxlaunchVisualLayersRequest(
     request: IncomingMessage,
     response: ServerResponse,
   ): Promise<boolean> {
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
 
-    if (requestUrl.pathname !== MUXLAUNCH_RENDER_MODEL_ENDPOINT) {
+    if (requestUrl.pathname !== MUXLAUNCH_VISUAL_LAYERS_ENDPOINT) {
       return false;
     }
 
@@ -39,11 +39,11 @@ export function createMuxlaunchRenderModelApi(
     }
 
     const model =
-      await inspectionProvider.getMuxlaunchRenderModelForResolution(resolution);
+      await inspectionProvider.getMuxlaunchVisualLayers(resolution);
 
     if (!model) {
       sendJson(response, 404, {
-        error: `No muxlaunch scheme was detected for resolution ${resolution}.`,
+        error: `Unknown resolution: ${resolution}`,
       });
       return true;
     }

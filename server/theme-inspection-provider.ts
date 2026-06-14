@@ -3,6 +3,7 @@ import path from "node:path";
 
 import type {
   MuxlaunchRenderModel,
+  MuxlaunchVisualLayerModel,
   ParsedThemeScheme,
   ThemeInspectionResult,
   ThemeSchemeFile
@@ -10,6 +11,7 @@ import type {
 import {
   mapMuxlaunchScheme,
   parseThemeScheme,
+  resolveMuxlaunchVisualLayers,
   ThemeInspectionService
 } from "../core";
 import { NodeThemeScanner } from "./node-theme-scanner";
@@ -51,6 +53,39 @@ export class ThemeInspectionProvider {
     schemeFile: ThemeSchemeFile,
   ): Promise<MuxlaunchRenderModel> {
     return mapMuxlaunchScheme(await this.getScheme(schemeFile));
+  }
+
+  async getMuxlaunchRenderModelForResolution(
+    resolution: string,
+  ): Promise<MuxlaunchRenderModel | undefined> {
+    const inspection = await this.getInspection();
+    const schemeFile = inspection.schemeFiles.find(
+      (candidate) =>
+        candidate.resolution === resolution &&
+        candidate.screenId?.toLowerCase() === "muxlaunch",
+    );
+
+    return schemeFile
+      ? this.getMuxlaunchRenderModel(schemeFile)
+      : undefined;
+  }
+
+  async getMuxlaunchVisualLayers(
+    resolutionName: string,
+  ): Promise<MuxlaunchVisualLayerModel | undefined> {
+    const inspection = await this.getInspection();
+    const resolution = inspection.resolutions.find(
+      (candidate) => candidate.name === resolutionName,
+    );
+
+    if (!resolution) {
+      return undefined;
+    }
+
+    const renderModel =
+      await this.getMuxlaunchRenderModelForResolution(resolutionName);
+
+    return resolveMuxlaunchVisualLayers(inspection, resolution, renderModel);
   }
 
   private async readScheme(
