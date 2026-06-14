@@ -2,17 +2,11 @@ import { useEffect, useState } from "react";
 
 import type {
   MuxlaunchRenderModel,
+  MuxlaunchVisualLayerModel,
   ThemeInspectionResult,
 } from "../../core/model";
-import { GlyphExplorer } from "../components/GlyphExplorer";
-import { InspectionStat } from "../components/InspectionStat";
-import { MappedMuxlaunchPreview } from "../components/MappedMuxlaunchPreview";
-import { MuxlaunchMappingPanel } from "../components/MuxlaunchMappingPanel";
-import { ResolutionSelector } from "../components/ResolutionSelector";
-import { SchemeExplorer } from "../components/SchemeExplorer";
-import { StaticMuxlaunchPreview } from "../components/StaticMuxlaunchPreview";
-import { WallpaperPreview } from "../components/WallpaperPreview";
-import { WarningList } from "../components/WarningList";
+import { ThemeInspectMode } from "./ThemeInspectMode";
+import { ThemePreviewMode } from "./ThemePreviewMode";
 
 interface ThemeInspectionScreenProps {
   inspection: ThemeInspectionResult;
@@ -21,15 +15,18 @@ interface ThemeInspectionScreenProps {
 export function ThemeInspectionScreen({
   inspection,
 }: ThemeInspectionScreenProps) {
-  const [previewMode, setPreviewMode] = useState<
-    "wallpaper" | "static" | "mapped" | "comparison"
-  >("wallpaper");
+  const [workspaceMode, setWorkspaceMode] = useState<"preview" | "inspect">(
+    "preview",
+  );
   const [selectedResolutionName, setSelectedResolutionName] = useState(
     inspection.resolutions[0]?.name ?? "",
   );
   const [muxlaunchModel, setMuxlaunchModel] =
     useState<MuxlaunchRenderModel>();
   const [muxlaunchError, setMuxlaunchError] = useState<string>();
+  const [visualLayers, setVisualLayers] =
+    useState<MuxlaunchVisualLayerModel>();
+  const [visualLayerError, setVisualLayerError] = useState<string>();
   const [muxlaunchLoading, setMuxlaunchLoading] = useState(false);
   const selectedResolution =
     inspection.resolutions.find(
@@ -44,39 +41,48 @@ export function ThemeInspectionScreen({
     const controller = new AbortController();
     setMuxlaunchModel(undefined);
     setMuxlaunchError(undefined);
+    setVisualLayers(undefined);
+    setVisualLayerError(undefined);
     setMuxlaunchLoading(true);
 
     async function loadMuxlaunchModel() {
       try {
-        const response = await fetch(
-          `/api/muxlaunch-render-model?resolution=${encodeURIComponent(
-            selectedResolution.name,
-          )}`,
-          { signal: controller.signal },
-        );
-        const contentType = response.headers.get("content-type") ?? "";
+        const resolution = encodeURIComponent(selectedResolution.name);
+        const [renderModelResult, visualLayersResult] =
+          await Promise.allSettled([
+            fetchJson(
+              `/api/muxlaunch-render-model?resolution=${resolution}`,
+              controller.signal,
+            ),
+            fetchJson(
+              `/api/muxlaunch-visual-layers?resolution=${resolution}`,
+              controller.signal,
+            ),
+          ]);
 
-        if (!contentType.toLowerCase().includes("json")) {
-          throw new Error(
-            response.ok
-              ? "The muxlaunch mapping endpoint returned an unexpected response."
-              : `The muxlaunch mapping request failed with status ${response.status}.`,
-          );
+        if (renderModelResult.status === "fulfilled") {
+          if (!isMuxlaunchRenderModel(renderModelResult.value)) {
+            throw new Error(
+              "The muxlaunch mapping endpoint returned invalid JSON data.",
+            );
+          }
+
+          setMuxlaunchModel(renderModelResult.value);
+        } else {
+          setMuxlaunchError(errorMessage(renderModelResult.reason));
         }
 
-        const body: unknown = await response.json();
+        if (visualLayersResult.status === "fulfilled") {
+          if (!isMuxlaunchVisualLayerModel(visualLayersResult.value)) {
+            throw new Error(
+              "The visual layers endpoint returned invalid JSON data.",
+            );
+          }
 
-        if (!response.ok) {
-          throw new Error(readApiError(body));
+          setVisualLayers(visualLayersResult.value);
+        } else {
+          setVisualLayerError(errorMessage(visualLayersResult.reason));
         }
-
-        if (!isMuxlaunchRenderModel(body)) {
-          throw new Error(
-            "The muxlaunch mapping endpoint returned invalid JSON data.",
-          );
-        }
-
-        setMuxlaunchModel(body);
       } catch (loadError) {
         if (!controller.signal.aborted) {
           setMuxlaunchError(
@@ -97,155 +103,82 @@ export function ThemeInspectionScreen({
   }, [selectedResolution]);
 
   return (
-    <main className="inspection-shell">
-      <header className="inspection-header">
-        <p className="eyebrow">muxpreview inspection</p>
-        <h1>{inspection.themeName}</h1>
-        <p className="theme-path">{inspection.themePath}</p>
+    <main className={`inspection-shell is-${workspaceMode}`}>
+      <header className="workspace-header">
+        <div>
+          <p className="eyebrow">muxpreview</p>
+          <h1>{inspection.themeName}</h1>
+        </div>
+        <nav className="workspace-mode-switch" aria-label="Workspace mode">
+          <button
+            type="button"
+            className={workspaceMode === "preview" ? "is-active" : undefined}
+            aria-pressed={workspaceMode === "preview"}
+            onClick={() => setWorkspaceMode("preview")}
+          >
+            Preview
+          </button>
+          <button
+            type="button"
+            className={workspaceMode === "inspect" ? "is-active" : undefined}
+            aria-pressed={workspaceMode === "inspect"}
+            onClick={() => setWorkspaceMode("inspect")}
+          >
+            Inspect
+          </button>
+        </nav>
       </header>
 
-      <section className="inspection-stats" aria-label="Asset counts">
-        <InspectionStat label="Images" value={inspection.assets.images.length} />
-        <InspectionStat label="Glyphs" value={inspection.assets.glyphs.length} />
-        <InspectionStat label="Fonts" value={inspection.assets.fonts.length} />
-      </section>
-
-      {selectedResolution && (
-        <section className="inspection-controls" aria-label="Preview context">
-          <ResolutionSelector
-            resolutions={inspection.resolutions}
-            selectedResolution={selectedResolution.name}
-            onChange={setSelectedResolutionName}
-          />
-        </section>
-      )}
-
-      <section className="inspection-section wallpaper-section">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Virtual display</p>
-            <h2>
-              {previewMode === "wallpaper" && "Wallpaper preview"}
-              {previewMode === "static" && "Static muxlaunch preview"}
-              {previewMode === "mapped" && "Mapped muxlaunch preview"}
-              {previewMode === "comparison" && "muxlaunch comparison"}
-            </h2>
-          </div>
-          <label className="preview-mode-selector">
-            <span>Preview mode</span>
-            <select
-              value={previewMode}
-              onChange={(event) =>
-                setPreviewMode(
-                  event.target.value as
-                    | "wallpaper"
-                    | "static"
-                    | "mapped"
-                    | "comparison",
-                )
-              }
-            >
-              <option value="wallpaper">Wallpaper</option>
-              <option value="static">Static muxlaunch</option>
-              <option value="mapped">Mapped muxlaunch</option>
-              <option value="comparison">Static vs mapped</option>
-            </select>
-          </label>
-        </div>
-
-        {selectedResolution ? (
-          previewMode === "wallpaper" ? (
-            <WallpaperPreview resolution={selectedResolution} />
-          ) : previewMode === "static" ? (
-            <StaticMuxlaunchPreview
-              resolution={selectedResolution}
-              glyphs={inspection.assets.glyphs}
-            />
-          ) : previewMode === "mapped" ? (
-            <MappedMuxlaunchPreview
-              resolution={selectedResolution}
-              glyphs={inspection.assets.glyphs}
-              images={inspection.assets.images}
-              renderModel={muxlaunchModel}
-            />
-          ) : (
-            <div className="muxlaunch-comparison">
-              <div>
-                <h3>Static Preview</h3>
-                <StaticMuxlaunchPreview
-                  resolution={selectedResolution}
-                  glyphs={inspection.assets.glyphs}
-                />
-              </div>
-              <div>
-                <h3>Mapped Preview</h3>
-                <MappedMuxlaunchPreview
-                  resolution={selectedResolution}
-                  glyphs={inspection.assets.glyphs}
-                  images={inspection.assets.images}
-                  renderModel={muxlaunchModel}
-                />
-              </div>
-            </div>
-          )
-        ) : (
-          <p className="empty-state">
-            No resolution folders are available for preview.
-          </p>
-        )}
-      </section>
-
-      {selectedResolution && (
-        <MuxlaunchMappingPanel
-          model={muxlaunchModel}
-          loading={muxlaunchLoading}
-          error={muxlaunchError}
-        />
-      )}
-
-      {selectedResolution && (
-        <SchemeExplorer
-          resolution={selectedResolution}
-          schemeFiles={inspection.schemeFiles}
-        />
-      )}
-
-      {selectedResolution && (
-        <GlyphExplorer
-          resolution={selectedResolution}
+      {workspaceMode === "preview" ? (
+        <ThemePreviewMode
           glyphs={inspection.assets.glyphs}
+          images={inspection.assets.images}
+          loading={muxlaunchLoading}
+          mappingError={muxlaunchError ?? visualLayerError}
+          renderModel={muxlaunchModel}
+          resolution={selectedResolution}
+          resolutions={inspection.resolutions}
+          visualLayers={visualLayers}
+          onResolutionChange={setSelectedResolutionName}
+        />
+      ) : (
+        <ThemeInspectMode
+          inspection={inspection}
+          layerError={visualLayerError}
+          loading={muxlaunchLoading}
+          mappingError={muxlaunchError}
+          renderModel={muxlaunchModel}
+          resolution={selectedResolution}
+          visualLayers={visualLayers}
+          onResolutionChange={setSelectedResolutionName}
         />
       )}
-
-      <section className="inspection-section">
-        <h2>Resolutions</h2>
-        {inspection.resolutions.length === 0 ? (
-          <p className="empty-state">No resolution folders detected.</p>
-        ) : (
-          <ul className="tag-list">
-            {inspection.resolutions.map((resolution) => (
-              <li key={resolution.relativePath}>{resolution.name}</li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="inspection-section">
-        <h2>Schemes ({inspection.schemeFiles.length})</h2>
-        {inspection.schemeFiles.length === 0 ? (
-          <p className="empty-state">No scheme files detected.</p>
-        ) : (
-          <ul className="file-list">
-            {inspection.schemeFiles.map((scheme) => (
-              <li key={scheme.relativePath}>{scheme.relativePath}</li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <WarningList warnings={inspection.warnings} />
     </main>
   );
+}
+
+async function fetchJson(url: string, signal: AbortSignal): Promise<unknown> {
+  const response = await fetch(url, { signal });
+  const contentType = response.headers.get("content-type") ?? "";
+  const endpoint = new URL(url, window.location.origin).pathname;
+
+  if (!contentType.toLowerCase().includes("json")) {
+    throw new Error(
+      response.ok
+        ? `${endpoint} returned a non-JSON response.`
+        : `${endpoint} failed with status ${response.status} and returned a non-JSON response.`,
+    );
+  }
+
+  const body: unknown = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      `${endpoint} failed with status ${response.status}: ${readApiError(body)}`,
+    );
+  }
+
+  return body;
 }
 
 function isMuxlaunchRenderModel(body: unknown): body is MuxlaunchRenderModel {
@@ -256,6 +189,22 @@ function isMuxlaunchRenderModel(body: unknown): body is MuxlaunchRenderModel {
     "mappedValues" in body &&
     "unmappedValues" in body
   );
+}
+
+function isMuxlaunchVisualLayerModel(
+  body: unknown,
+): body is MuxlaunchVisualLayerModel {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "resolution" in body &&
+    "layers" in body &&
+    Array.isArray(body.layers)
+  );
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Unable to load preview data.";
 }
 
 function readApiError(body: unknown): string {

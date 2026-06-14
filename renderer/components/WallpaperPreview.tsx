@@ -31,9 +31,9 @@ export function WallpaperPreview({ resolution }: WallpaperPreviewProps) {
     <figure className="wallpaper-preview">
       <VirtualDisplayCanvas
         resolution={resolution}
-        wallpaperUrl={failed ? undefined : wallpaperUrl}
-        wallpaperAlt={`${resolution.name} theme wallpaper`}
-        onWallpaperError={() => setFailed(true)}
+        backgroundUrl={failed ? undefined : wallpaperUrl}
+        backgroundAlt={`${resolution.name} theme wallpaper`}
+        onBackgroundError={() => setFailed(true)}
       >
         {failed && <p>Unable to load this wallpaper from the local server.</p>}
       </VirtualDisplayCanvas>

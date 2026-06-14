@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 
 import type {
   MuxlaunchRenderModel,
+  MuxlaunchVisualLayerModel,
   ThemeAsset,
   ThemeResolution,
 } from "../../core/model";
@@ -17,6 +18,8 @@ interface MappedMuxlaunchPreviewProps {
   images: ThemeAsset[];
   renderModel?: MuxlaunchRenderModel;
   resolution: ThemeResolution;
+  showCaption?: boolean;
+  visualLayers?: MuxlaunchVisualLayerModel;
 }
 
 const BASE_FALLBACK_LAYOUT = {
@@ -33,8 +36,12 @@ export function MappedMuxlaunchPreview({
   images,
   renderModel,
   resolution,
+  showCaption = true,
+  visualLayers,
 }: MappedMuxlaunchPreviewProps) {
-  const [wallpaperFailed, setWallpaperFailed] = useState(false);
+  const [backgroundFailed, setBackgroundFailed] = useState(false);
+  const [contentFailed, setContentFailed] = useState(false);
+  const [overlayFailed, setOverlayFailed] = useState(false);
   const items = useMemo(
     () =>
       selectMuxlaunchItems(
@@ -48,12 +55,31 @@ export function MappedMuxlaunchPreview({
   const gridStyle = createMappedGridStyle(renderModel, resolution);
 
   useEffect(() => {
-    setWallpaperFailed(false);
-  }, [resolution.name, resolution.wallpaper?.relativePath]);
+    setBackgroundFailed(false);
+    setContentFailed(false);
+    setOverlayFailed(false);
+  }, [
+    resolution.name,
+    visualLayers?.backgroundAsset?.relativePath,
+    visualLayers?.contentAsset?.relativePath,
+    visualLayers?.overlayAsset?.relativePath,
+  ]);
 
-  const wallpaperUrl =
-    resolution.wallpaper && !wallpaperFailed
-      ? `/api/theme-wallpaper?resolution=${encodeURIComponent(resolution.name)}`
+  const backgroundUrl =
+    visualLayers?.backgroundAsset && !backgroundFailed
+      ? themeImageUrl(visualLayers.backgroundAsset.relativePath)
+      : undefined;
+  const overlayUrl =
+    visualLayers?.overlayEnabled &&
+    visualLayers.overlayAsset &&
+    !overlayFailed
+      ? themeImageUrl(visualLayers.overlayAsset.relativePath)
+      : undefined;
+  const staticContentUrl =
+    visualLayers?.contentMode === "static" &&
+    visualLayers.contentAsset &&
+    !contentFailed
+      ? themeImageUrl(visualLayers.contentAsset.relativePath)
       : undefined;
 
   return (
@@ -61,52 +87,65 @@ export function MappedMuxlaunchPreview({
       <VirtualDisplayCanvas
         className="muxlaunch-display mapped-muxlaunch-display"
         resolution={resolution}
-        wallpaperUrl={wallpaperUrl}
-        wallpaperAlt=""
-        onWallpaperError={() => setWallpaperFailed(true)}
+        backgroundUrl={backgroundUrl}
+        backgroundAlt=""
+        onBackgroundError={() => setBackgroundFailed(true)}
+        overlayUrl={overlayUrl}
+        onOverlayError={() => setOverlayFailed(true)}
       >
-        <div className="muxlaunch-mapped-grid" style={gridStyle.grid}>
-          {items.map((item, index) => {
-            const selected = index === 0;
-            const assetUrl = muxlaunchAssetUrl(item);
+        {staticContentUrl ? (
+          <img
+            className="muxlaunch-static-composition"
+            src={staticContentUrl}
+            alt=""
+            onError={() => setContentFailed(true)}
+          />
+        ) : (
+          <div className="muxlaunch-mapped-grid" style={gridStyle.grid}>
+            {items.map((item, index) => {
+              const selected = index === 0;
+              const assetUrl = muxlaunchAssetUrl(item);
 
-            return (
-              <article
-                className={`muxlaunch-mapped-item${selected ? " is-selected" : ""}`}
-                key={item.label}
-                style={selected ? gridStyle.focusCell : gridStyle.cell}
-              >
-                <span
-                  className="muxlaunch-mapped-icon"
-                  style={selected ? gridStyle.focusImage : gridStyle.image}
+              return (
+                <article
+                  className={`muxlaunch-mapped-item${selected ? " is-selected" : ""}`}
+                  key={item.label}
+                  style={selected ? gridStyle.focusCell : gridStyle.cell}
                 >
-                  {assetUrl ? (
-                    <img src={assetUrl} alt="" />
-                  ) : (
-                    <span aria-hidden="true">?</span>
-                  )}
-                </span>
-                <span
-                  className="muxlaunch-mapped-label"
-                  style={selected ? gridStyle.focusLabel : gridStyle.label}
-                >
-                  {item.label}
-                </span>
-              </article>
-            );
-          })}
-          <p
-            className="muxlaunch-current-label"
-            style={gridStyle.currentLabel}
-          >
-            {items[0]?.label}
-          </p>
-        </div>
+                  <span
+                    className="muxlaunch-mapped-icon"
+                    style={selected ? gridStyle.focusImage : gridStyle.image}
+                  >
+                    {assetUrl ? (
+                      <img src={assetUrl} alt="" />
+                    ) : (
+                      <span aria-hidden="true">?</span>
+                    )}
+                  </span>
+                  <span
+                    className="muxlaunch-mapped-label"
+                    style={selected ? gridStyle.focusLabel : gridStyle.label}
+                  >
+                    {item.label}
+                  </span>
+                </article>
+              );
+            })}
+            <p
+              className="muxlaunch-current-label"
+              style={gridStyle.currentLabel}
+            >
+              {items[0]?.label}
+            </p>
+          </div>
+        )}
       </VirtualDisplayCanvas>
-      <figcaption>
-        Mapped preview using verified muxlaunch grid values where available.
-        Missing values use muxpreview defaults.
-      </figcaption>
+      {showCaption && (
+        <figcaption>
+          Mapped preview using verified muxlaunch grid values where available.
+          Missing values use muxpreview defaults.
+        </figcaption>
+      )}
     </figure>
   );
 }
@@ -211,14 +250,17 @@ function createMappedGridStyle(
       paddingTop: percent(layout.imagePaddingTop ?? 0, cellHeight),
     } satisfies CSSProperties,
     label: {
+      display: alphas?.labelText === 0 ? "none" : undefined,
       paddingInline: percent(layout.textPaddingSide ?? 0, cellWidth),
       paddingBottom: percent(layout.textPaddingBottom ?? 0, cellHeight),
     } satisfies CSSProperties,
     focusLabel: {
+      display: alphas?.focusText === 0 ? "none" : undefined,
       paddingInline: percent(layout.textPaddingSide ?? 0, cellWidth),
       paddingBottom: percent(layout.textPaddingBottom ?? 0, cellHeight),
     } satisfies CSSProperties,
     currentLabel: {
+      display: alphas?.currentItemLabelText === 0 ? "none" : undefined,
       top: `calc(100% + ${percent(labelOffset, resolution.height)})`,
       color: colorWithAlpha(
         colors?.currentItemLabelText ?? colors?.focusText ?? "#FFFFFF",
@@ -226,6 +268,10 @@ function createMappedGridStyle(
       ),
     } satisfies CSSProperties,
   };
+}
+
+function themeImageUrl(relativePath: string): string {
+  return `/api/theme-image?path=${encodeURIComponent(relativePath)}`;
 }
 
 function bounded(

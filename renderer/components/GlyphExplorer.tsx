@@ -65,9 +65,9 @@ export function GlyphExplorer({ glyphs, resolution }: GlyphExplorerProps) {
           <VirtualDisplayCanvas
             className="glyph-display"
             resolution={resolution}
-            wallpaperUrl={wallpaperUrl}
-            wallpaperAlt=""
-            onWallpaperError={() => setWallpaperFailed(true)}
+            backgroundUrl={wallpaperUrl}
+            backgroundAlt=""
+            onBackgroundError={() => setWallpaperFailed(true)}
           >
             <div className="glyph-grid">
               {visibleGlyphs.map((glyph) => {

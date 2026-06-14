@@ -36,9 +36,9 @@ export function StaticMuxlaunchPreview({
       <VirtualDisplayCanvas
         className="muxlaunch-display"
         resolution={resolution}
-        wallpaperUrl={wallpaperUrl}
-        wallpaperAlt=""
-        onWallpaperError={() => setWallpaperFailed(true)}
+        backgroundUrl={wallpaperUrl}
+        backgroundAlt=""
+        onBackgroundError={() => setWallpaperFailed(true)}
       >
         <div className="muxlaunch-static-grid">
           {items.map((item) => (
