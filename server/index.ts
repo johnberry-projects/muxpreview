@@ -4,6 +4,7 @@ import path from "node:path";
 import { createMuxlaunchRenderModelApi } from "./muxlaunch-render-model-api";
 import { createStaticAppHandler } from "./static-app";
 import { createThemeGlyphApi } from "./theme-glyph-api";
+import { createThemeImageApi } from "./theme-image-api";
 import { createThemeInspectionApi } from "./theme-inspection-api";
 import { ThemeInspectionProvider } from "./theme-inspection-provider";
 import { createThemeSchemeApi } from "./theme-scheme-api";
@@ -23,6 +24,7 @@ export function createMuxpreviewServer(
   const handleMuxlaunchRenderModel =
     createMuxlaunchRenderModelApi(inspectionProvider);
   const handleThemeGlyph = createThemeGlyphApi(inspectionProvider);
+  const handleThemeImage = createThemeImageApi(inspectionProvider);
   const handleThemeInspection = createThemeInspectionApi(inspectionProvider);
   const handleThemeScheme = createThemeSchemeApi(inspectionProvider);
   const handleThemeWallpaper = createThemeWallpaperApi(inspectionProvider);
@@ -37,6 +39,10 @@ export function createMuxpreviewServer(
       }
 
       if (await handleThemeGlyph(request, response)) {
+        return;
+      }
+
+      if (await handleThemeImage(request, response)) {
         return;
       }
 

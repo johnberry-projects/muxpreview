@@ -16,6 +16,7 @@ export type {
   ThemeSchemeSource
 } from "./scheme";
 export type {
+  MuxlaunchAlphaModel,
   MuxlaunchColorModel,
   MuxlaunchLayoutModel,
   MuxlaunchMappedValue,

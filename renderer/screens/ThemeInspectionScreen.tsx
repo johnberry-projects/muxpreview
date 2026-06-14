@@ -6,6 +6,7 @@ import type {
 } from "../../core/model";
 import { GlyphExplorer } from "../components/GlyphExplorer";
 import { InspectionStat } from "../components/InspectionStat";
+import { MappedMuxlaunchPreview } from "../components/MappedMuxlaunchPreview";
 import { MuxlaunchMappingPanel } from "../components/MuxlaunchMappingPanel";
 import { ResolutionSelector } from "../components/ResolutionSelector";
 import { SchemeExplorer } from "../components/SchemeExplorer";
@@ -20,9 +21,9 @@ interface ThemeInspectionScreenProps {
 export function ThemeInspectionScreen({
   inspection,
 }: ThemeInspectionScreenProps) {
-  const [previewMode, setPreviewMode] = useState<"wallpaper" | "muxlaunch">(
-    "wallpaper",
-  );
+  const [previewMode, setPreviewMode] = useState<
+    "wallpaper" | "static" | "mapped" | "comparison"
+  >("wallpaper");
   const [selectedResolutionName, setSelectedResolutionName] = useState(
     inspection.resolutions[0]?.name ?? "",
   );
@@ -124,9 +125,10 @@ export function ThemeInspectionScreen({
           <div>
             <p className="eyebrow">Virtual display</p>
             <h2>
-              {previewMode === "wallpaper"
-                ? "Wallpaper preview"
-                : "Static muxlaunch preview"}
+              {previewMode === "wallpaper" && "Wallpaper preview"}
+              {previewMode === "static" && "Static muxlaunch preview"}
+              {previewMode === "mapped" && "Mapped muxlaunch preview"}
+              {previewMode === "comparison" && "muxlaunch comparison"}
             </h2>
           </div>
           <label className="preview-mode-selector">
@@ -135,12 +137,18 @@ export function ThemeInspectionScreen({
               value={previewMode}
               onChange={(event) =>
                 setPreviewMode(
-                  event.target.value as "wallpaper" | "muxlaunch",
+                  event.target.value as
+                    | "wallpaper"
+                    | "static"
+                    | "mapped"
+                    | "comparison",
                 )
               }
             >
               <option value="wallpaper">Wallpaper</option>
-              <option value="muxlaunch">Static muxlaunch</option>
+              <option value="static">Static muxlaunch</option>
+              <option value="mapped">Mapped muxlaunch</option>
+              <option value="comparison">Static vs mapped</option>
             </select>
           </label>
         </div>
@@ -148,12 +156,37 @@ export function ThemeInspectionScreen({
         {selectedResolution ? (
           previewMode === "wallpaper" ? (
             <WallpaperPreview resolution={selectedResolution} />
-          ) : (
+          ) : previewMode === "static" ? (
             <StaticMuxlaunchPreview
               resolution={selectedResolution}
               glyphs={inspection.assets.glyphs}
+            />
+          ) : previewMode === "mapped" ? (
+            <MappedMuxlaunchPreview
+              resolution={selectedResolution}
+              glyphs={inspection.assets.glyphs}
+              images={inspection.assets.images}
               renderModel={muxlaunchModel}
             />
+          ) : (
+            <div className="muxlaunch-comparison">
+              <div>
+                <h3>Static Preview</h3>
+                <StaticMuxlaunchPreview
+                  resolution={selectedResolution}
+                  glyphs={inspection.assets.glyphs}
+                />
+              </div>
+              <div>
+                <h3>Mapped Preview</h3>
+                <MappedMuxlaunchPreview
+                  resolution={selectedResolution}
+                  glyphs={inspection.assets.glyphs}
+                  images={inspection.assets.images}
+                  renderModel={muxlaunchModel}
+                />
+              </div>
+            </div>
           )
         ) : (
           <p className="empty-state">

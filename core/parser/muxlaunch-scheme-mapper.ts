@@ -1,4 +1,5 @@
 import type {
+  MuxlaunchAlphaModel,
   MuxlaunchColorModel,
   MuxlaunchLayoutModel,
   MuxlaunchMappedValue,
@@ -21,7 +22,8 @@ const EXPECTED_KEYS = [
   "grid.LOCATION_Y",
   "grid.CELL_WIDTH",
   "grid.CELL_HEIGHT",
-  "grid.CELL_DEFAULT_TEXT"
+  "grid.CELL_DEFAULT_TEXT",
+  "grid.CELL_FOCUS_BACKGROUND"
 ];
 
 const MAPPINGS: Record<string, MappingDefinition> = {
@@ -45,15 +47,63 @@ const MAPPINGS: Record<string, MappingDefinition> = {
     name: "textPaddingSide",
     kind: "number"
   },
+  "grid.CELL_RADIUS": { name: "cellRadius", kind: "number" },
+  "grid.CELL_BORDER_WIDTH": { name: "cellBorderWidth", kind: "number" },
+  "grid.CURRENT_ITEM_LABEL_OFFSET_Y": {
+    name: "currentItemLabelOffsetY",
+    kind: "number"
+  },
   "grid.CELL_DEFAULT_TEXT": { name: "labelText", kind: "color" },
+  "grid.CELL_DEFAULT_TEXT_ALPHA": {
+    name: "labelText",
+    kind: "number"
+  },
   "grid.CELL_DEFAULT_BACKGROUND": {
     name: "cellBackground",
     kind: "color"
   },
+  "grid.CELL_DEFAULT_BACKGROUND_ALPHA": {
+    name: "cellBackground",
+    kind: "number"
+  },
+  "grid.CELL_DEFAULT_BORDER": { name: "cellBorder", kind: "color" },
+  "grid.CELL_DEFAULT_BORDER_ALPHA": {
+    name: "cellBorder",
+    kind: "number"
+  },
+  "grid.CELL_DEFAULT_IMAGE_ALPHA": {
+    name: "cellImage",
+    kind: "number"
+  },
   "grid.CELL_FOCUS_TEXT": { name: "focusText", kind: "color" },
+  "grid.CELL_FOCUS_TEXT_ALPHA": {
+    name: "focusText",
+    kind: "number"
+  },
   "grid.CELL_FOCUS_BACKGROUND": {
     name: "focusBackground",
     kind: "color"
+  },
+  "grid.CELL_FOCUS_BACKGROUND_ALPHA": {
+    name: "focusBackground",
+    kind: "number"
+  },
+  "grid.CELL_FOCUS_BORDER": { name: "focusBorder", kind: "color" },
+  "grid.CELL_FOCUS_BORDER_ALPHA": {
+    name: "focusBorder",
+    kind: "number"
+  },
+  "grid.CELL_FOCUS_IMAGE_ALPHA": {
+    name: "focusImage",
+    kind: "number"
+  },
+  "grid.CURRENT_ITEM_LABEL_TEXT": {
+    name: "currentItemLabelText",
+    kind: "color"
+  },
+  "grid.CURRENT_ITEM_LABEL_TEXT_ALPHA": {
+    name: "currentItemLabelText",
+    kind: "number"
   }
 };
 
@@ -127,6 +177,7 @@ export function mapMuxlaunchScheme(
     availableSections: scheme.sections.map((section) => section.name),
     layout: buildLayout(mappedValues),
     colors: buildColors(mappedValues),
+    alphas: buildAlphas(mappedValues),
     fontValues,
     glyphReferences: GLYPH_REFERENCES,
     mappedValues,
@@ -178,11 +229,53 @@ function parseColor(value: string): string | undefined {
 function buildLayout(
   values: MuxlaunchMappedValue[]
 ): MuxlaunchLayoutModel {
-  return pickMappedValues<MuxlaunchLayoutModel>(values, "number");
+  const layoutNames = new Set([
+    "locationX",
+    "locationY",
+    "columnCount",
+    "rowCount",
+    "columnWidth",
+    "rowHeight",
+    "cellWidth",
+    "cellHeight",
+    "imagePaddingTop",
+    "textPaddingBottom",
+    "textPaddingSide",
+    "cellRadius",
+    "cellBorderWidth",
+    "currentItemLabelOffsetY"
+  ]);
+
+  return pickMappedValues<MuxlaunchLayoutModel>(
+    values.filter((value) => layoutNames.has(value.name)),
+    "number"
+  );
 }
 
 function buildColors(values: MuxlaunchMappedValue[]): MuxlaunchColorModel {
   return pickMappedValues<MuxlaunchColorModel>(values, "color");
+}
+
+function buildAlphas(values: MuxlaunchMappedValue[]): MuxlaunchAlphaModel {
+  const alphaNames = new Set([
+    "labelText",
+    "cellBackground",
+    "cellBorder",
+    "cellImage",
+    "focusText",
+    "focusBackground",
+    "focusBorder",
+    "focusImage",
+    "currentItemLabelText"
+  ]);
+  const alphaValues = values.filter(
+    (value) =>
+      value.kind === "number" &&
+      value.key.endsWith("_ALPHA") &&
+      alphaNames.has(value.name)
+  );
+
+  return pickMappedValues<MuxlaunchAlphaModel>(alphaValues, "number");
 }
 
 function pickMappedValues<T extends object>(

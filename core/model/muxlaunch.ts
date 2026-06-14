@@ -30,13 +30,31 @@ export interface MuxlaunchLayoutModel {
   imagePaddingTop?: number;
   textPaddingBottom?: number;
   textPaddingSide?: number;
+  cellRadius?: number;
+  cellBorderWidth?: number;
+  currentItemLabelOffsetY?: number;
 }
 
 export interface MuxlaunchColorModel {
   labelText?: string;
   cellBackground?: string;
+  cellBorder?: string;
   focusText?: string;
   focusBackground?: string;
+  focusBorder?: string;
+  currentItemLabelText?: string;
+}
+
+export interface MuxlaunchAlphaModel {
+  labelText?: number;
+  cellBackground?: number;
+  cellBorder?: number;
+  cellImage?: number;
+  focusText?: number;
+  focusBackground?: number;
+  focusBorder?: number;
+  focusImage?: number;
+  currentItemLabelText?: number;
 }
 
 export interface MuxlaunchRenderModel {
@@ -46,6 +64,7 @@ export interface MuxlaunchRenderModel {
   availableSections: string[];
   layout: MuxlaunchLayoutModel;
   colors: MuxlaunchColorModel;
+  alphas: MuxlaunchAlphaModel;
   fontValues: MuxlaunchMappedValue[];
   glyphReferences: string[];
   mappedValues: MuxlaunchMappedValue[];
