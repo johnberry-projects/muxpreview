@@ -698,6 +698,14 @@ loads them through the existing glyph endpoint. Matching and fallback rules
 are deterministic preview policy, isolated from core parsing and explicitly
 separate from future scheme-driven screen rendering.
 
+The muxlaunch mapping iteration introduces a framework-agnostic transformation
+from `ParsedThemeScheme` to `MuxlaunchRenderModel`. The model separates
+validated mapped values, categorized font values, missing expectations, known
+fixture asset references, and source-preserving unmapped values. The Node host
+selects the exact resolution-specific source file and exposes the model; React
+only decides which conservative fields are safe to apply to the static
+fixture. Scheme layering remains a separate future resolver responsibility.
+
 ### 10.3 Asset serving
 
 The API should map opaque asset IDs to authorized files. It should not accept

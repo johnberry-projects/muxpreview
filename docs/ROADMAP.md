@@ -25,6 +25,9 @@ The theme inspection foundation and browser inspection iteration now include:
 - glyph selection with source, format, size, and path metadata
 - a restricted glyph endpoint that serves only inspected glyph files
 - a static muxlaunch fixture composed from real wallpaper and glyph assets
+- a framework-agnostic muxlaunch scheme mapper with source provenance
+- mapped, missing, and unmapped muxlaunch value diagnostics
+- conservative application of mapped grid values in the static preview
 - loading and actionable configuration/error states
 - build and test tooling
 
@@ -108,8 +111,26 @@ independent of React.
   precedence.
 - Missing matches fall back deterministically to unused muxlaunch glyphs, then
   to other unused glyphs visible for the selected resolution.
-- Item positions, labels, sizing, and styling are hardcoded. No scheme values,
-  navigation state, or actual muxlaunch layout behavior are applied.
+- Labels, fallback positions, sizing, and most styling remain hardcoded. The
+  narrow validated subset documented below may override those fallbacks.
+  Navigation state and complete muxlaunch layout behavior are not applied.
+
+### muxlaunch scheme mapping decisions and limits
+
+- The mapper consumes the existing parsed scheme model and does not read files
+  or depend on React, Node, or HTTP.
+- The server maps only the exact `muxlaunch.ini` for the selected resolution.
+  It does not infer or implement `global.ini`, `default.ini`, alternate, or
+  built-in-default layering.
+- Known integer layout keys and six-digit colour keys are validated before
+  entering the structured model. Font-related assignments are categorized as
+  raw text because font semantics are not implemented.
+- Unknown keys and invalid known values remain visible with source section,
+  key, raw value, line number, and reason.
+- The preview applies only bounded row/column counts, in-canvas X/Y positions,
+  spacing derived from paired dimensions, and validated label colour.
+- Every mapped field remains optional. Missing or invalid values preserve the
+  static fixture fallback.
 
 ## 1. Roadmap principles
 
