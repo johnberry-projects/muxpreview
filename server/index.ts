@@ -2,6 +2,7 @@ import { createServer, type Server } from "node:http";
 import path from "node:path";
 
 import { createStaticAppHandler } from "./static-app";
+import { createThemeGlyphApi } from "./theme-glyph-api";
 import { createThemeInspectionApi } from "./theme-inspection-api";
 import { ThemeInspectionProvider } from "./theme-inspection-provider";
 import { createThemeSchemeApi } from "./theme-scheme-api";
@@ -18,6 +19,7 @@ export function createMuxpreviewServer(
   const inspectionProvider = new ThemeInspectionProvider(
     options.themePath ?? process.env.MUXPREVIEW_THEME_PATH,
   );
+  const handleThemeGlyph = createThemeGlyphApi(inspectionProvider);
   const handleThemeInspection = createThemeInspectionApi(inspectionProvider);
   const handleThemeScheme = createThemeSchemeApi(inspectionProvider);
   const handleThemeWallpaper = createThemeWallpaperApi(inspectionProvider);
@@ -27,6 +29,10 @@ export function createMuxpreviewServer(
 
   return createServer(async (request, response) => {
     try {
+      if (await handleThemeGlyph(request, response)) {
+        return;
+      }
+
       if (await handleThemeInspection(request, response)) {
         return;
       }
