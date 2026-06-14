@@ -57,6 +57,10 @@ export interface MuxlaunchAlphaModel {
   currentItemLabelText?: number;
 }
 
+export interface MuxlaunchVisualModel {
+  imageOverlayEnabled?: boolean;
+}
+
 export interface MuxlaunchRenderModel {
   screenName: "muxlaunch";
   sourceSchemePath: string;
@@ -65,6 +69,7 @@ export interface MuxlaunchRenderModel {
   layout: MuxlaunchLayoutModel;
   colors: MuxlaunchColorModel;
   alphas: MuxlaunchAlphaModel;
+  visual: MuxlaunchVisualModel;
   fontValues: MuxlaunchMappedValue[];
   glyphReferences: string[];
   mappedValues: MuxlaunchMappedValue[];

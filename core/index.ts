@@ -1,4 +1,5 @@
 export { ThemeInspectionService } from "./theme-inspection-service";
+export { resolveMuxlaunchVisualLayers } from "./muxlaunch-visual-layer-service";
 export { mapMuxlaunchScheme, parseThemeScheme } from "./parser";
 export type {
   MuxlaunchColorModel,
@@ -7,6 +8,11 @@ export type {
   MuxlaunchMappedValueKind,
   MuxlaunchRenderModel,
   MuxlaunchUnmappedValue,
+  MuxlaunchVisualLayer,
+  MuxlaunchVisualLayerKind,
+  MuxlaunchVisualLayerModel,
+  MuxlaunchVisualLayerState,
+  MuxlaunchVisualModel,
   ParsedThemeScheme,
   ThemeSchemeEntry,
   ThemeSchemeParseIssue,

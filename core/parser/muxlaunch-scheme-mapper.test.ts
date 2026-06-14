@@ -19,7 +19,10 @@ describe("mapMuxlaunchScheme", () => {
         "UNKNOWN_GRID_KEY = value",
         "",
         "[font]",
-        "FONT_LIST_PAD_TOP = 3"
+        "FONT_LIST_PAD_TOP = 3",
+        "",
+        "[misc]",
+        "IMAGE_OVERLAY = 1"
       ].join("\n"),
       {
         relativePath: "640x480/scheme/muxlaunch.ini",
@@ -43,6 +46,7 @@ describe("mapMuxlaunchScheme", () => {
       labelText: 180,
       focusBackground: 255
     });
+    expect(model.visual.imageOverlayEnabled).toBe(true);
     expect(model.fontValues).toHaveLength(1);
     expect(model.unmappedValues).toEqual([
       expect.objectContaining({

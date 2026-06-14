@@ -104,6 +104,10 @@ const MAPPINGS: Record<string, MappingDefinition> = {
   "grid.CURRENT_ITEM_LABEL_TEXT_ALPHA": {
     name: "currentItemLabelText",
     kind: "number"
+  },
+  "misc.IMAGE_OVERLAY": {
+    name: "imageOverlayEnabled",
+    kind: "number"
   }
 };
 
@@ -178,12 +182,29 @@ export function mapMuxlaunchScheme(
     layout: buildLayout(mappedValues),
     colors: buildColors(mappedValues),
     alphas: buildAlphas(mappedValues),
+    visual: {
+      imageOverlayEnabled: readBoolean(
+        mappedValues,
+        "imageOverlayEnabled"
+      )
+    },
     fontValues,
     glyphReferences: GLYPH_REFERENCES,
     mappedValues,
     unmappedValues,
     missingExpectedValues: EXPECTED_KEYS.filter((key) => !mappedKeys.has(key))
   };
+}
+
+function readBoolean(
+  values: MuxlaunchMappedValue[],
+  name: string
+): boolean | undefined {
+  const value = values.find(
+    (candidate) => candidate.name === name && candidate.kind === "number"
+  )?.value;
+
+  return value === 0 ? false : value === 1 ? true : undefined;
 }
 
 function mapEntry(

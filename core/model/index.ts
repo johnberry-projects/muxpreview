@@ -22,5 +22,12 @@ export type {
   MuxlaunchMappedValue,
   MuxlaunchMappedValueKind,
   MuxlaunchRenderModel,
-  MuxlaunchUnmappedValue
+  MuxlaunchUnmappedValue,
+  MuxlaunchVisualModel
 } from "./muxlaunch";
+export type {
+  MuxlaunchVisualLayer,
+  MuxlaunchVisualLayerKind,
+  MuxlaunchVisualLayerModel,
+  MuxlaunchVisualLayerState
+} from "./visual-layer";
