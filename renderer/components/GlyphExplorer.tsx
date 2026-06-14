@@ -89,6 +89,7 @@ export function GlyphExplorer({ glyphs, resolution }: GlyphExplorerProps) {
                       <img src={glyphUrl} alt="" loading="lazy" />
                     </span>
                     <span className="glyph-name">{glyph.fileName}</span>
+                    <span className="glyph-path">{glyph.relativePath}</span>
                   </button>
                 );
               })}

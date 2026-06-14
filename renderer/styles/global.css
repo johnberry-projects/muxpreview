@@ -401,6 +401,15 @@ body {
   overflow-wrap: anywhere;
 }
 
+.glyph-path {
+  color: #8995a3;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.58rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
 .glyph-metadata {
   position: sticky;
   top: 1rem;
