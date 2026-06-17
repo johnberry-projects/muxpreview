@@ -61,6 +61,28 @@ export interface MuxlaunchVisualModel {
   imageOverlayEnabled?: boolean;
 }
 
+export interface MuxlaunchStatusBarModel {
+  headerHeight?: number;
+  headerBackground?: string;
+  headerBackgroundAlpha?: number;
+  headerText?: string;
+  headerTextAlpha?: number;
+  dateTimeText?: string;
+  dateTimeAlpha?: number;
+  datePaddingLeft?: number;
+  statusPaddingRight?: number;
+  batteryNormal?: string;
+  batteryNormalAlpha?: number;
+  batteryActive?: string;
+  batteryActiveAlpha?: number;
+  batteryLow?: string;
+  batteryLowAlpha?: number;
+  networkNormal?: string;
+  networkNormalAlpha?: number;
+  networkActive?: string;
+  networkActiveAlpha?: number;
+}
+
 export interface MuxlaunchRenderModel {
   screenName: "muxlaunch";
   sourceSchemePath: string;
@@ -70,6 +92,7 @@ export interface MuxlaunchRenderModel {
   colors: MuxlaunchColorModel;
   alphas: MuxlaunchAlphaModel;
   visual: MuxlaunchVisualModel;
+  statusBar: MuxlaunchStatusBarModel;
   fontValues: MuxlaunchMappedValue[];
   glyphReferences: string[];
   mappedValues: MuxlaunchMappedValue[];

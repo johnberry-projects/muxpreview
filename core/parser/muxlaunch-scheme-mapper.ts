@@ -5,6 +5,7 @@ import type {
   MuxlaunchMappedValue,
   MuxlaunchMappedValueKind,
   MuxlaunchRenderModel,
+  MuxlaunchStatusBarModel,
   MuxlaunchUnmappedValue,
   ParsedThemeScheme,
   ThemeSchemeEntry
@@ -27,6 +28,40 @@ const EXPECTED_KEYS = [
 ];
 
 const MAPPINGS: Record<string, MappingDefinition> = {
+  "header.HEADER_HEIGHT": { name: "headerHeight", kind: "number" },
+  "header.HEADER_BACKGROUND": { name: "headerBackground", kind: "color" },
+  "header.HEADER_BACKGROUND_ALPHA": {
+    name: "headerBackground",
+    kind: "number"
+  },
+  "header.HEADER_TEXT": { name: "headerText", kind: "color" },
+  "header.HEADER_TEXT_ALPHA": { name: "headerText", kind: "number" },
+  "date.DATETIME_TEXT": { name: "dateTimeText", kind: "color" },
+  "date.DATETIME_ALPHA": { name: "dateTimeText", kind: "number" },
+  "date.PADDING_LEFT": { name: "datePaddingLeft", kind: "number" },
+  "status.PADDING_RIGHT": { name: "statusPaddingRight", kind: "number" },
+  "battery.BATTERY_NORMAL": { name: "batteryNormal", kind: "color" },
+  "battery.BATTERY_NORMAL_ALPHA": {
+    name: "batteryNormal",
+    kind: "number"
+  },
+  "battery.BATTERY_ACTIVE": { name: "batteryActive", kind: "color" },
+  "battery.BATTERY_ACTIVE_ALPHA": {
+    name: "batteryActive",
+    kind: "number"
+  },
+  "battery.BATTERY_LOW": { name: "batteryLow", kind: "color" },
+  "battery.BATTERY_LOW_ALPHA": { name: "batteryLow", kind: "number" },
+  "network.NETWORK_NORMAL": { name: "networkNormal", kind: "color" },
+  "network.NETWORK_NORMAL_ALPHA": {
+    name: "networkNormal",
+    kind: "number"
+  },
+  "network.NETWORK_ACTIVE": { name: "networkActive", kind: "color" },
+  "network.NETWORK_ACTIVE_ALPHA": {
+    name: "networkActive",
+    kind: "number"
+  },
   "grid.LOCATION_X": { name: "locationX", kind: "number" },
   "grid.LOCATION_Y": { name: "locationY", kind: "number" },
   "grid.COLUMN_COUNT": { name: "columnCount", kind: "number" },
@@ -188,6 +223,7 @@ export function mapMuxlaunchScheme(
         "imageOverlayEnabled"
       )
     },
+    statusBar: buildStatusBar(mappedValues),
     fontValues,
     glyphReferences: GLYPH_REFERENCES,
     mappedValues,
@@ -297,6 +333,62 @@ function buildAlphas(values: MuxlaunchMappedValue[]): MuxlaunchAlphaModel {
   );
 
   return pickMappedValues<MuxlaunchAlphaModel>(alphaValues, "number");
+}
+
+function buildStatusBar(
+  values: MuxlaunchMappedValue[]
+): MuxlaunchStatusBarModel {
+  return {
+    headerHeight: readNumber(values, "headerHeight"),
+    headerBackground: readColor(values, "headerBackground"),
+    headerBackgroundAlpha: readAlpha(values, "headerBackground"),
+    headerText: readColor(values, "headerText"),
+    headerTextAlpha: readAlpha(values, "headerText"),
+    dateTimeText: readColor(values, "dateTimeText"),
+    dateTimeAlpha: readAlpha(values, "dateTimeText"),
+    datePaddingLeft: readNumber(values, "datePaddingLeft"),
+    statusPaddingRight: readNumber(values, "statusPaddingRight"),
+    batteryNormal: readColor(values, "batteryNormal"),
+    batteryNormalAlpha: readAlpha(values, "batteryNormal"),
+    batteryActive: readColor(values, "batteryActive"),
+    batteryActiveAlpha: readAlpha(values, "batteryActive"),
+    batteryLow: readColor(values, "batteryLow"),
+    batteryLowAlpha: readAlpha(values, "batteryLow"),
+    networkNormal: readColor(values, "networkNormal"),
+    networkNormalAlpha: readAlpha(values, "networkNormal"),
+    networkActive: readColor(values, "networkActive"),
+    networkActiveAlpha: readAlpha(values, "networkActive")
+  };
+}
+
+function readNumber(
+  values: MuxlaunchMappedValue[],
+  name: string
+): number | undefined {
+  return values.find(
+    (value) => value.name === name && value.kind === "number"
+  )?.value as number | undefined;
+}
+
+function readColor(
+  values: MuxlaunchMappedValue[],
+  name: string
+): string | undefined {
+  return values.find(
+    (value) => value.name === name && value.kind === "color"
+  )?.value as string | undefined;
+}
+
+function readAlpha(
+  values: MuxlaunchMappedValue[],
+  name: string
+): number | undefined {
+  return values.find(
+    (value) =>
+      value.name === name &&
+      value.kind === "number" &&
+      value.key.endsWith("_ALPHA")
+  )?.value as number | undefined;
 }
 
 function pickMappedValues<T extends object>(

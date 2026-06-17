@@ -21,6 +21,14 @@ describe("mapMuxlaunchScheme", () => {
         "[font]",
         "FONT_LIST_PAD_TOP = 3",
         "",
+        "[header]",
+        "HEADER_HEIGHT = 48",
+        "HEADER_TEXT = ffb000",
+        "",
+        "[network]",
+        "NETWORK_ACTIVE = ffffff",
+        "NETWORK_ACTIVE_ALPHA = 255",
+        "",
         "[misc]",
         "IMAGE_OVERLAY = 1"
       ].join("\n"),
@@ -47,6 +55,12 @@ describe("mapMuxlaunchScheme", () => {
       focusBackground: 255
     });
     expect(model.visual.imageOverlayEnabled).toBe(true);
+    expect(model.statusBar).toMatchObject({
+      headerHeight: 48,
+      headerText: "#FFB000",
+      networkActive: "#FFFFFF",
+      networkActiveAlpha: 255
+    });
     expect(model.fontValues).toHaveLength(1);
     expect(model.unmappedValues).toEqual([
       expect.objectContaining({

@@ -22,6 +22,7 @@ export type {
   MuxlaunchMappedValue,
   MuxlaunchMappedValueKind,
   MuxlaunchRenderModel,
+  MuxlaunchStatusBarModel,
   MuxlaunchUnmappedValue,
   MuxlaunchVisualModel
 } from "./muxlaunch";
