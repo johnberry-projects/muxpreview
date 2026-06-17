@@ -9,13 +9,16 @@ import { resolveMuxlaunchVisualLayers } from "./muxlaunch-visual-layer-service";
 
 describe("resolveMuxlaunchVisualLayers", () => {
   it("prefers a muxlaunch background and preserves embedded top-bar chrome", () => {
-    const inspection = createInspection([
+    const inspection = createInspection({
+      images: [
       image("640x480/image/wall/default.png", "640x480"),
       image("640x480/image/wall/muxlaunch.png", "640x480"),
       image("640x480/image/wall/muxcharge.png", "640x480"),
       image("640x480/image/overlay.png", "640x480"),
       image("640x480/image/static/muxlaunch/explore.png", "640x480")
-    ]);
+      ],
+      glyphs: [image("640x480/glyph/header/network_active.png", "640x480")]
+    });
     const resolution = inspection.resolutions[0];
     const model = resolveMuxlaunchVisualLayers(
       inspection,
@@ -46,15 +49,20 @@ describe("resolveMuxlaunchVisualLayers", () => {
         expect.objectContaining({
           kind: "content",
           assetPaths: ["640x480/image/static/muxlaunch/explore.png"]
+        }),
+        expect.objectContaining({
+          kind: "status-bar",
+          state: "rendered",
+          assetPaths: ["640x480/glyph/header/network_active.png"]
         })
       ])
     );
   });
 
   it("does not use unrelated screen wallpapers as muxlaunch backgrounds", () => {
-    const inspection = createInspection([
-      image("640x480/image/wall/muxcharge.png", "640x480")
-    ]);
+    const inspection = createInspection({
+      images: [image("640x480/image/wall/muxcharge.png", "640x480")]
+    });
     const model = resolveMuxlaunchVisualLayers(
       inspection,
       inspection.resolutions[0]
@@ -69,9 +77,13 @@ describe("resolveMuxlaunchVisualLayers", () => {
   });
 });
 
-function createInspection(
-  images: ThemeInspectionResult["assets"]["images"]
-): ThemeInspectionResult {
+function createInspection({
+  images,
+  glyphs = []
+}: {
+  images: ThemeInspectionResult["assets"]["images"];
+  glyphs?: ThemeInspectionResult["assets"]["glyphs"];
+}): ThemeInspectionResult {
   const resolution: ThemeResolution = {
     name: "640x480",
     width: 640,
@@ -80,7 +92,7 @@ function createInspection(
     schemeFiles: [],
     assets: {
       fonts: [],
-      glyphs: [],
+      glyphs,
       images,
       unknown: []
     },
@@ -96,12 +108,12 @@ function createInspection(
     schemeFiles: [],
     assets: {
       fonts: [],
-      glyphs: [],
+      glyphs,
       images,
       unknown: []
     },
     warnings: [],
-    scannedFileCount: images.length
+    scannedFileCount: images.length + glyphs.length
   };
 }
 
@@ -129,6 +141,7 @@ function createRenderModel(
     colors: {},
     alphas: {},
     visual: { imageOverlayEnabled },
+    statusBar: {},
     fontValues: [],
     glyphReferences: [],
     mappedValues: [],

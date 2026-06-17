@@ -3,6 +3,7 @@ import type { ThemeAsset } from "./theme";
 export type MuxlaunchVisualLayerKind =
   | "background"
   | "top-bar"
+  | "status-bar"
   | "content"
   | "overlay";
 

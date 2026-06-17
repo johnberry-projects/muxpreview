@@ -31,6 +31,12 @@ export function resolveMuxlaunchVisualLayers(
   ].filter(
     (asset) => !asset.resolution || asset.resolution === resolution.name
   );
+  const statusAssets = inspection.assets.glyphs
+    .filter(isHeaderGlyph)
+    .filter(
+      (asset) => !asset.resolution || asset.resolution === resolution.name
+    )
+    .sort(comparePaths);
   const contentAsset = selectAsset(
     staticAssets,
     resolution.name,
@@ -68,6 +74,17 @@ export function resolveMuxlaunchVisualLayers(
         note: backgroundAsset
           ? "UI chrome is preserved inside the background composite and is not drawn twice."
           : "No separate top-bar asset was verified."
+      },
+      {
+        id: "status-bar",
+        kind: "status-bar",
+        label: "Status bar",
+        state: statusAssets.length > 0 ? "rendered" : "generated",
+        assetPaths: statusAssets.map((asset) => asset.relativePath),
+        note:
+          statusAssets.length > 0
+            ? "Header glyphs are rendered over the top bar with mapped colors where available."
+            : "No header glyphs were detected; CSS fallback indicators are used."
       },
       {
         id: "content",
@@ -160,6 +177,10 @@ function isMuxlaunchStaticImage(asset: ThemeAsset): boolean {
 
 function isMuxlaunchGlyph(asset: ThemeAsset): boolean {
   return asset.relativePath.toLowerCase().includes("glyph/muxlaunch/");
+}
+
+function isHeaderGlyph(asset: ThemeAsset): boolean {
+  return asset.relativePath.toLowerCase().includes("glyph/header/");
 }
 
 function isNamed(asset: ThemeAsset, name: string): boolean {
