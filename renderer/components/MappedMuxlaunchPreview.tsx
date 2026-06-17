@@ -11,6 +11,7 @@ import {
   muxlaunchAssetUrl,
   selectMuxlaunchItems,
 } from "./muxlaunch-preview-items";
+import { MuxlaunchStatusBar } from "./MuxlaunchStatusBar";
 import { VirtualDisplayCanvas } from "./VirtualDisplayCanvas";
 
 interface MappedMuxlaunchPreviewProps {
@@ -93,6 +94,12 @@ export function MappedMuxlaunchPreview({
         overlayUrl={overlayUrl}
         onOverlayError={() => setOverlayFailed(true)}
       >
+        <MuxlaunchStatusBar
+          glyphs={glyphs}
+          renderModel={renderModel}
+          resolution={resolution}
+          title="muxlaunch"
+        />
         {staticContentUrl ? (
           <img
             className="muxlaunch-static-composition"

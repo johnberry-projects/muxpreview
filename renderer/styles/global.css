@@ -484,6 +484,91 @@ body {
   object-fit: fill;
 }
 
+.muxlaunch-status-bar {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  height: var(--status-height);
+  padding-right: var(--status-padding-right);
+  padding-left: var(--status-padding-left);
+  color: var(--status-color);
+  background: var(--status-background);
+  font-size: clamp(0.5rem, 1.55vw, 1rem);
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 70%);
+}
+
+.muxlaunch-status-side {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.muxlaunch-status-time {
+  justify-content: flex-start;
+  font-variant-numeric: tabular-nums;
+}
+
+.muxlaunch-status-title {
+  max-width: 55%;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.muxlaunch-status-indicators {
+  justify-content: flex-end;
+  gap: clamp(0.25rem, 1.2vw, 0.65rem);
+}
+
+.muxlaunch-status-icon {
+  display: block;
+  width: auto;
+  height: var(--status-icon-height);
+  object-fit: contain;
+}
+
+.muxlaunch-status-fallback-icon {
+  font-size: 0.72em;
+  letter-spacing: 0.04em;
+}
+
+.muxlaunch-status-fallback-battery {
+  position: relative;
+  display: inline-block;
+  width: calc(var(--status-icon-height) * 1.7);
+  height: calc(var(--status-icon-height) * 0.72);
+  border: max(1px, calc(var(--status-icon-height) * 0.08)) solid currentColor;
+  border-radius: 0.12rem;
+}
+
+.muxlaunch-status-fallback-battery::before {
+  position: absolute;
+  top: 20%;
+  right: -18%;
+  width: 10%;
+  height: 60%;
+  border-radius: 0 0.1rem 0.1rem 0;
+  background: currentColor;
+  content: "";
+}
+
+.muxlaunch-status-fallback-battery::after {
+  position: absolute;
+  inset: 18% 22% 18% 12%;
+  background: currentColor;
+  content: "";
+}
+
 .muxlaunch-mapped-item {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
