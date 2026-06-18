@@ -101,7 +101,7 @@ export function MappedMuxlaunchPreview({
           glyphs={glyphs}
           renderModel={renderModel}
           resolution={resolution}
-          title="muxlaunch"
+          title="Main Menu"
         />
         {staticContentUrl ? (
           <img

@@ -59,15 +59,37 @@ export class ThemeInspectionProvider {
     resolution: string,
   ): Promise<MuxlaunchRenderModel | undefined> {
     const inspection = await this.getInspection();
+    const baseSchemeFiles = inspection.schemeFiles.filter(
+      (candidate) =>
+        candidate.resolution === resolution &&
+        candidate.fileName.toLowerCase() === "default.ini",
+    );
     const schemeFile = inspection.schemeFiles.find(
       (candidate) =>
         candidate.resolution === resolution &&
         candidate.screenId?.toLowerCase() === "muxlaunch",
     );
 
-    return schemeFile
-      ? this.getMuxlaunchRenderModel(schemeFile)
-      : undefined;
+    if (!schemeFile) {
+      return undefined;
+    }
+
+    const parsedSchemes = await Promise.all(
+      [...baseSchemeFiles, schemeFile].map((candidate) =>
+        this.getScheme(candidate),
+      ),
+    );
+
+    return mapMuxlaunchScheme(
+      combineSchemes(parsedSchemes, {
+        relativePath: parsedSchemes
+          .map((scheme) => scheme.relativePath)
+          .join(" + "),
+        fileName: schemeFile.fileName,
+        resolution,
+        screenId: "muxlaunch",
+      }),
+    );
   }
 
   async getMuxlaunchVisualLayers(
@@ -109,4 +131,18 @@ export class ThemeInspectionProvider {
     const content = await readFile(resolvedFile, "utf8");
     return parseThemeScheme(content, schemeFile);
   }
+}
+
+function combineSchemes(
+  schemes: ParsedThemeScheme[],
+  source: Pick<
+    ParsedThemeScheme,
+    "fileName" | "relativePath" | "resolution" | "screenId"
+  >,
+): ParsedThemeScheme {
+  return {
+    ...source,
+    sections: schemes.flatMap((scheme) => scheme.sections),
+    issues: schemes.flatMap((scheme) => scheme.issues),
+  };
 }

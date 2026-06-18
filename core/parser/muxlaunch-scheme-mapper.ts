@@ -365,7 +365,8 @@ function readNumber(
   values: MuxlaunchMappedValue[],
   name: string
 ): number | undefined {
-  return values.find(
+  return findLastMappedValue(
+    values,
     (value) => value.name === name && value.kind === "number"
   )?.value as number | undefined;
 }
@@ -374,7 +375,8 @@ function readColor(
   values: MuxlaunchMappedValue[],
   name: string
 ): string | undefined {
-  return values.find(
+  return findLastMappedValue(
+    values,
     (value) => value.name === name && value.kind === "color"
   )?.value as string | undefined;
 }
@@ -383,12 +385,26 @@ function readAlpha(
   values: MuxlaunchMappedValue[],
   name: string
 ): number | undefined {
-  return values.find(
+  return findLastMappedValue(
+    values,
     (value) =>
       value.name === name &&
       value.kind === "number" &&
       value.key.endsWith("_ALPHA")
   )?.value as number | undefined;
+}
+
+function findLastMappedValue(
+  values: MuxlaunchMappedValue[],
+  predicate: (value: MuxlaunchMappedValue) => boolean
+): MuxlaunchMappedValue | undefined {
+  for (let index = values.length - 1; index >= 0; index -= 1) {
+    if (predicate(values[index])) {
+      return values[index];
+    }
+  }
+
+  return undefined;
 }
 
 function pickMappedValues<T extends object>(

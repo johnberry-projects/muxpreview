@@ -490,9 +490,9 @@ body {
   z-index: 2;
   top: 0;
   left: 0;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
   height: var(--status-height);
   padding-right: var(--status-padding-right);
@@ -507,6 +507,8 @@ body {
 }
 
 .muxlaunch-status-side {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   min-width: 0;
@@ -518,24 +520,59 @@ body {
 }
 
 .muxlaunch-status-title {
-  max-width: 55%;
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: 0;
+  left: 0;
+  padding: 0 25%;
   overflow: hidden;
   text-align: center;
   text-overflow: ellipsis;
   text-transform: uppercase;
+  transform: translateY(-50%);
   white-space: nowrap;
 }
 
 .muxlaunch-status-indicators {
   justify-content: flex-end;
-  gap: clamp(0.25rem, 1.2vw, 0.65rem);
+  gap: calc(var(--status-icon-height) * 0.35);
 }
 
 .muxlaunch-status-icon {
   display: block;
-  width: auto;
   height: var(--status-icon-height);
-  object-fit: contain;
+  background: currentColor;
+  mask-image: var(--status-icon-mask);
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-image: var(--status-icon-mask);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+.muxlaunch-status-icon.is-network {
+  width: var(--status-icon-height);
+  color: var(--status-network-color);
+}
+
+.muxlaunch-status-icon.is-battery {
+  width: calc(var(--status-icon-height) * 1.7);
+  color: var(--status-battery-color);
+}
+
+.muxlaunch-status-icon.is-network,
+.muxlaunch-status-fallback-icon.is-network {
+  color: var(--status-network-color);
+  opacity: var(--status-network-opacity);
+}
+
+.muxlaunch-status-icon.is-battery,
+.muxlaunch-status-fallback-battery.is-battery {
+  color: var(--status-battery-color);
+  opacity: var(--status-battery-opacity);
 }
 
 .muxlaunch-status-fallback-icon {

@@ -16,19 +16,27 @@ interface MuxlaunchStatusBarProps {
 
 type StatusBarStyle = CSSProperties & {
   "--status-background"?: string;
+  "--status-battery-opacity"?: number;
+  "--status-battery-color"?: string;
   "--status-color"?: string;
   "--status-font-size"?: string;
   "--status-height"?: string;
   "--status-icon-height"?: string;
+  "--status-network-color"?: string;
+  "--status-network-opacity"?: number;
   "--status-padding-left"?: string;
   "--status-padding-right"?: string;
+};
+
+type StatusIconStyle = CSSProperties & {
+  "--status-icon-mask"?: string;
 };
 
 export function MuxlaunchStatusBar({
   glyphs,
   renderModel,
   resolution,
-  title = "muxlaunch"
+  title = "Main Menu"
 }: MuxlaunchStatusBarProps) {
   const [currentTime, setCurrentTime] = useState(formatCurrentTime);
   const assets = useMemo(
@@ -57,25 +65,30 @@ export function MuxlaunchStatusBar({
         className="muxlaunch-status-side muxlaunch-status-indicators"
       >
         {assets.network ? (
-          <img
-            className="muxlaunch-status-icon"
-            src={glyphUrl(assets.network)}
-            alt="Wi-Fi"
+          <span
+            aria-label="Wi-Fi"
+            className="muxlaunch-status-icon is-network"
+            role="img"
+            style={createIconMaskStyle(assets.network)}
           />
         ) : (
-          <span className="muxlaunch-status-fallback-icon" aria-label="Wi-Fi">
+          <span
+            className="muxlaunch-status-fallback-icon is-network"
+            aria-label="Wi-Fi"
+          >
             Wi-Fi
           </span>
         )}
         {assets.battery ? (
-          <img
-            className="muxlaunch-status-icon"
-            src={glyphUrl(assets.battery)}
-            alt="Battery"
+          <span
+            aria-label="Battery"
+            className="muxlaunch-status-icon is-battery"
+            role="img"
+            style={createIconMaskStyle(assets.battery)}
           />
         ) : (
           <span
-            className="muxlaunch-status-fallback-battery"
+            className="muxlaunch-status-fallback-battery is-battery"
             aria-label="Battery"
           />
         )}
@@ -155,15 +168,33 @@ function createStatusBarStyle(
     statusBar?.headerBackground && headerBackgroundAlpha
       ? colorWithAlpha(statusBar.headerBackground, headerBackgroundAlpha)
       : "transparent";
+  const textColor =
+    statusBar?.headerText ?? statusBar?.dateTimeText ?? "#FFFFFF";
 
   return {
     "--status-background": background,
+    "--status-battery-color":
+      statusBar?.batteryNormal ?? statusBar?.batteryActive ?? textColor,
+    "--status-battery-opacity": alphaOpacity(
+      statusBar?.batteryNormalAlpha ?? statusBar?.batteryActiveAlpha
+    ),
     "--status-color": color,
     "--status-font-size": `${Math.max(10, Math.round(height * 0.32))}px`,
     "--status-height": `${height}px`,
     "--status-icon-height": `${Math.max(14, Math.round(height * 0.44))}px`,
-    "--status-padding-left": `${positive(statusBar?.datePaddingLeft) ?? Math.round(10 * fallbackScale)}px`,
-    "--status-padding-right": `${positive(statusBar?.statusPaddingRight) ?? Math.round(12 * fallbackScale)}px`
+    "--status-network-color":
+      statusBar?.networkActive ?? statusBar?.networkNormal ?? textColor,
+    "--status-network-opacity": alphaOpacity(
+      statusBar?.networkActiveAlpha ?? statusBar?.networkNormalAlpha
+    ),
+    "--status-padding-left": `${positive(statusBar?.datePaddingLeft) ?? Math.round(18 * fallbackScale)}px`,
+    "--status-padding-right": `${positive(statusBar?.statusPaddingRight) ?? Math.round(20 * fallbackScale)}px`
+  };
+}
+
+function createIconMaskStyle(asset: ThemeAsset): StatusIconStyle {
+  return {
+    "--status-icon-mask": `url("${glyphUrl(asset)}")`
   };
 }
 
@@ -173,6 +204,10 @@ function positive(value: number | undefined): number | undefined {
 
 function positiveOrZero(value: number | undefined): number | undefined {
   return value !== undefined && value >= 0 ? value : undefined;
+}
+
+function alphaOpacity(alpha: number | undefined): number {
+  return alpha === undefined ? 1 : Math.min(Math.max(alpha, 0), 255) / 255;
 }
 
 function colorWithAlpha(color: string, alpha: number): string {
