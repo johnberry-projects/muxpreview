@@ -1,6 +1,7 @@
 import type {
   MuxlaunchRenderModel,
   MuxlaunchVisualLayerModel,
+  ThemeCompositionReport,
   ThemeInspectionResult,
   ThemeResolution,
 } from "../../core/model";
@@ -11,10 +12,13 @@ import { MuxlaunchMappingPanel } from "../components/MuxlaunchMappingPanel";
 import { ResolutionSelector } from "../components/ResolutionSelector";
 import { SchemeExplorer } from "../components/SchemeExplorer";
 import { StaticMuxlaunchPreview } from "../components/StaticMuxlaunchPreview";
+import { ThemeCompositionPanel } from "../components/ThemeCompositionPanel";
 import { VisualLayersPanel } from "../components/VisualLayersPanel";
 import { WarningList } from "../components/WarningList";
 
 interface ThemeInspectModeProps {
+  compositionError?: string;
+  compositionReport?: ThemeCompositionReport;
   inspection: ThemeInspectionResult;
   layerError?: string;
   loading: boolean;
@@ -26,6 +30,8 @@ interface ThemeInspectModeProps {
 }
 
 export function ThemeInspectMode({
+  compositionError,
+  compositionReport,
   inspection,
   layerError,
   loading,
@@ -92,6 +98,13 @@ export function ThemeInspectMode({
         model={visualLayers}
         loading={loading}
         error={layerError}
+      />
+
+      <ThemeCompositionPanel
+        error={compositionError}
+        loading={loading}
+        report={compositionReport}
+        resolution={resolution}
       />
 
       {resolution && (

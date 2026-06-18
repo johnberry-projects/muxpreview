@@ -762,6 +762,147 @@ body {
   background: #f3bd3d;
 }
 
+.composition-summary {
+  margin: 0;
+  color: #8995a3;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.composition-group {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.composition-group h3 {
+  margin: 0;
+  color: #cbd3dc;
+  font-size: 0.85rem;
+}
+
+.composition-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.composition-card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #2b333d;
+  border-radius: 0.5rem;
+  background: #11151a;
+}
+
+.composition-card.is-risk {
+  border-color: #66512a;
+  background: #211c13;
+}
+
+.composition-card > div:first-child {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.composition-card h4 {
+  margin: 0;
+  color: #e8ecf1;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.composition-card dl {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+}
+
+.composition-card dl div {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: 0.6rem;
+}
+
+.composition-card dt,
+.composition-card dd,
+.composition-card li,
+.composition-source-list {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+
+.composition-card dt {
+  color: #73808d;
+}
+
+.composition-card dd {
+  margin: 0;
+  color: #cbd3dc;
+}
+
+.composition-card ul,
+.composition-uncertainties ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #aeb8c4;
+}
+
+.composition-source-list {
+  margin: 0.75rem 0;
+  color: #f2c879;
+}
+
+.composition-confidence {
+  flex: 0 0 auto;
+  padding: 0.22rem 0.42rem;
+  border-radius: 999px;
+  color: #11151a;
+  background: #73808d;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.composition-confidence.is-high {
+  background: #f3bd3d;
+}
+
+.composition-confidence.is-medium {
+  background: #f2c879;
+}
+
+.composition-confidence.is-low {
+  color: #cbd3dc;
+  background: #3a4551;
+}
+
+.composition-uncertainties {
+  margin-top: 1rem;
+  border: 1px solid #2b333d;
+  border-radius: 0.5rem;
+  background: #11151a;
+}
+
+.composition-uncertainties summary {
+  padding: 0.8rem 1rem;
+  color: #cbd3dc;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.composition-uncertainties ul {
+  padding: 0 1rem 1rem 2.25rem;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.72rem;
+}
+
 .mapping-summary {
   display: flex;
   flex-wrap: wrap;
@@ -1247,6 +1388,10 @@ body {
   }
 
   .visual-layer-list {
+    grid-template-columns: 1fr;
+  }
+
+  .composition-card-grid {
     grid-template-columns: 1fr;
   }
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type {
   MuxlaunchRenderModel,
   MuxlaunchVisualLayerModel,
+  ThemeCompositionReport,
   ThemeInspectionResult,
 } from "../../core/model";
 import { ThemeInspectMode } from "./ThemeInspectMode";
@@ -27,6 +28,9 @@ export function ThemeInspectionScreen({
   const [visualLayers, setVisualLayers] =
     useState<MuxlaunchVisualLayerModel>();
   const [visualLayerError, setVisualLayerError] = useState<string>();
+  const [compositionReport, setCompositionReport] =
+    useState<ThemeCompositionReport>();
+  const [compositionError, setCompositionError] = useState<string>();
   const [muxlaunchLoading, setMuxlaunchLoading] = useState(false);
   const selectedResolution =
     inspection.resolutions.find(
@@ -43,12 +47,14 @@ export function ThemeInspectionScreen({
     setMuxlaunchError(undefined);
     setVisualLayers(undefined);
     setVisualLayerError(undefined);
+    setCompositionReport(undefined);
+    setCompositionError(undefined);
     setMuxlaunchLoading(true);
 
     async function loadMuxlaunchModel() {
       try {
         const resolution = encodeURIComponent(selectedResolution.name);
-        const [renderModelResult, visualLayersResult] =
+        const [renderModelResult, visualLayersResult, compositionResult] =
           await Promise.allSettled([
             fetchJson(
               `/api/muxlaunch-render-model?resolution=${resolution}`,
@@ -58,6 +64,7 @@ export function ThemeInspectionScreen({
               `/api/muxlaunch-visual-layers?resolution=${resolution}`,
               controller.signal,
             ),
+            fetchJson("/api/theme-composition", controller.signal),
           ]);
 
         if (renderModelResult.status === "fulfilled") {
@@ -82,6 +89,18 @@ export function ThemeInspectionScreen({
           setVisualLayers(visualLayersResult.value);
         } else {
           setVisualLayerError(errorMessage(visualLayersResult.reason));
+        }
+
+        if (compositionResult.status === "fulfilled") {
+          if (!isThemeCompositionReport(compositionResult.value)) {
+            throw new Error(
+              "The theme composition endpoint returned invalid JSON data.",
+            );
+          }
+
+          setCompositionReport(compositionResult.value);
+        } else {
+          setCompositionError(errorMessage(compositionResult.reason));
         }
       } catch (loadError) {
         if (!controller.signal.aborted) {
@@ -143,6 +162,8 @@ export function ThemeInspectionScreen({
         />
       ) : (
         <ThemeInspectMode
+          compositionError={compositionError}
+          compositionReport={compositionReport}
           inspection={inspection}
           layerError={visualLayerError}
           loading={muxlaunchLoading}
@@ -200,6 +221,18 @@ function isMuxlaunchVisualLayerModel(
     "resolution" in body &&
     "layers" in body &&
     Array.isArray(body.layers)
+  );
+}
+
+function isThemeCompositionReport(
+  body: unknown,
+): body is ThemeCompositionReport {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "generatedFrom" in body &&
+    "resolutions" in body &&
+    Array.isArray(body.resolutions)
   );
 }
 
