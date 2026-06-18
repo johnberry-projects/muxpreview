@@ -80,6 +80,7 @@ export function ThemeInspectMode({
                 glyphs={inspection.assets.glyphs}
                 images={inspection.assets.images}
                 renderModel={renderModel}
+                showMetricsOverlay
                 visualLayers={visualLayers}
               />
             </div>

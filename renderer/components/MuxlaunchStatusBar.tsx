@@ -17,6 +17,7 @@ interface MuxlaunchStatusBarProps {
 type StatusBarStyle = CSSProperties & {
   "--status-background"?: string;
   "--status-color"?: string;
+  "--status-font-size"?: string;
   "--status-height"?: string;
   "--status-icon-height"?: string;
   "--status-padding-left"?: string;
@@ -136,9 +137,9 @@ function createStatusBarStyle(
   renderModel: MuxlaunchRenderModel | undefined,
   resolution: ThemeResolution
 ): StatusBarStyle {
-  const scale = Math.min(resolution.width / 640, resolution.height / 480);
+  const fallbackScale = Math.min(resolution.width / 640, resolution.height / 480);
   const statusBar = renderModel?.statusBar;
-  const height = positive(statusBar?.headerHeight) ?? Math.round(48 * scale);
+  const height = positive(statusBar?.headerHeight) ?? Math.round(48 * fallbackScale);
   const color =
     colorWithAlpha(
       statusBar?.headerText ??
@@ -158,10 +159,11 @@ function createStatusBarStyle(
   return {
     "--status-background": background,
     "--status-color": color,
+    "--status-font-size": `${Math.max(10, Math.round(height * 0.32))}px`,
     "--status-height": `${height}px`,
     "--status-icon-height": `${Math.max(14, Math.round(height * 0.44))}px`,
-    "--status-padding-left": `${positive(statusBar?.datePaddingLeft) ?? Math.round(10 * scale)}px`,
-    "--status-padding-right": `${positive(statusBar?.statusPaddingRight) ?? Math.round(12 * scale)}px`
+    "--status-padding-left": `${positive(statusBar?.datePaddingLeft) ?? Math.round(10 * fallbackScale)}px`,
+    "--status-padding-right": `${positive(statusBar?.statusPaddingRight) ?? Math.round(12 * fallbackScale)}px`
   };
 }
 

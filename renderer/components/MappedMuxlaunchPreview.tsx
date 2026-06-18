@@ -20,6 +20,7 @@ interface MappedMuxlaunchPreviewProps {
   renderModel?: MuxlaunchRenderModel;
   resolution: ThemeResolution;
   showCaption?: boolean;
+  showMetricsOverlay?: boolean;
   visualLayers?: MuxlaunchVisualLayerModel;
 }
 
@@ -38,6 +39,7 @@ export function MappedMuxlaunchPreview({
   renderModel,
   resolution,
   showCaption = true,
+  showMetricsOverlay = false,
   visualLayers,
 }: MappedMuxlaunchPreviewProps) {
   const [backgroundFailed, setBackgroundFailed] = useState(false);
@@ -93,6 +95,7 @@ export function MappedMuxlaunchPreview({
         onBackgroundError={() => setBackgroundFailed(true)}
         overlayUrl={overlayUrl}
         onOverlayError={() => setOverlayFailed(true)}
+        showMetricsOverlay={showMetricsOverlay}
       >
         <MuxlaunchStatusBar
           glyphs={glyphs}
@@ -168,15 +171,15 @@ function createMappedGridStyle(
   renderModel: MuxlaunchRenderModel | undefined,
   resolution: ThemeResolution,
 ) {
-  const scale = Math.min(
+  const fallbackScale = Math.min(
     resolution.width / 640,
     resolution.height / 480,
   );
   const fallbackLayout = {
-    columnWidth: BASE_FALLBACK_LAYOUT.columnWidth * scale,
-    rowHeight: BASE_FALLBACK_LAYOUT.rowHeight * scale,
-    cellWidth: BASE_FALLBACK_LAYOUT.cellWidth * scale,
-    cellHeight: BASE_FALLBACK_LAYOUT.cellHeight * scale,
+    columnWidth: BASE_FALLBACK_LAYOUT.columnWidth * fallbackScale,
+    rowHeight: BASE_FALLBACK_LAYOUT.rowHeight * fallbackScale,
+    cellWidth: BASE_FALLBACK_LAYOUT.cellWidth * fallbackScale,
+    cellHeight: BASE_FALLBACK_LAYOUT.cellHeight * fallbackScale,
   };
   const layout = renderModel?.layout ?? {};
   const columns = bounded(layout.columnCount, 1, 8) ?? 4;
@@ -204,17 +207,19 @@ function createMappedGridStyle(
   const borderWidth = bounded(layout.cellBorderWidth, 0, 20) ?? 0;
   const radius = bounded(layout.cellRadius, 0, Math.max(cellWidth, cellHeight));
   const labelOffset = layout.currentItemLabelOffsetY ?? 8;
+  const labelFontSize = Math.max(8, Math.round(cellHeight * 0.13));
+  const currentLabelFontSize = Math.max(9, Math.round(cellHeight * 0.15));
 
   return {
     grid: {
-      left: percent(locationX, resolution.width),
-      top: percent(locationY, resolution.height),
-      width: percent(gridWidth, resolution.width),
-      height: percent(gridHeight, resolution.height),
+      left: locationX,
+      top: locationY,
+      width: gridWidth,
+      height: gridHeight,
       gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
       gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-      columnGap: percent(columnGap, gridWidth),
-      rowGap: percent(rowGap, gridHeight),
+      columnGap,
+      rowGap,
     } satisfies CSSProperties,
     cell: {
       borderWidth,
@@ -250,29 +255,32 @@ function createMappedGridStyle(
     } satisfies CSSProperties,
     image: {
       opacity: alphaOpacity(alphas?.cellImage),
-      paddingTop: percent(layout.imagePaddingTop ?? 0, cellHeight),
+      paddingTop: layout.imagePaddingTop ?? 0,
     } satisfies CSSProperties,
     focusImage: {
       opacity: alphaOpacity(alphas?.focusImage),
-      paddingTop: percent(layout.imagePaddingTop ?? 0, cellHeight),
+      paddingTop: layout.imagePaddingTop ?? 0,
     } satisfies CSSProperties,
     label: {
       display: alphas?.labelText === 0 ? "none" : undefined,
-      paddingInline: percent(layout.textPaddingSide ?? 0, cellWidth),
-      paddingBottom: percent(layout.textPaddingBottom ?? 0, cellHeight),
+      fontSize: labelFontSize,
+      paddingInline: layout.textPaddingSide ?? 0,
+      paddingBottom: layout.textPaddingBottom ?? 0,
     } satisfies CSSProperties,
     focusLabel: {
       display: alphas?.focusText === 0 ? "none" : undefined,
-      paddingInline: percent(layout.textPaddingSide ?? 0, cellWidth),
-      paddingBottom: percent(layout.textPaddingBottom ?? 0, cellHeight),
+      fontSize: labelFontSize,
+      paddingInline: layout.textPaddingSide ?? 0,
+      paddingBottom: layout.textPaddingBottom ?? 0,
     } satisfies CSSProperties,
     currentLabel: {
       display: alphas?.currentItemLabelText === 0 ? "none" : undefined,
-      top: `calc(100% + ${percent(labelOffset, resolution.height)})`,
+      top: gridHeight + labelOffset,
       color: colorWithAlpha(
         colors?.currentItemLabelText ?? colors?.focusText ?? "#FFFFFF",
         alphas?.currentItemLabelText ?? 255,
       ),
+      fontSize: currentLabelFontSize,
     } satisfies CSSProperties,
   };
 }
@@ -293,10 +301,6 @@ function bounded(
 
 function positive(value: number | undefined): number | undefined {
   return value !== undefined && value > 0 ? value : undefined;
-}
-
-function percent(value: number, total: number): string {
-  return `${(value / total) * 100}%`;
 }
 
 function alphaOpacity(alpha: number | undefined): number {
