@@ -5,10 +5,12 @@ import type {
   MuxlaunchRenderModel,
   MuxlaunchVisualLayerModel,
   ParsedThemeScheme,
+  ThemeCompositionReport,
   ThemeInspectionResult,
   ThemeSchemeFile
 } from "../core/model";
 import {
+  analyzeThemeComposition,
   mapMuxlaunchScheme,
   parseThemeScheme,
   resolveMuxlaunchVisualLayers,
@@ -35,6 +37,10 @@ export class ThemeInspectionProvider {
     ).inspect(this.themePath);
 
     return this.inspectionPromise;
+  }
+
+  async getThemeCompositionReport(): Promise<ThemeCompositionReport> {
+    return analyzeThemeComposition(await this.getInspection());
   }
 
   getScheme(schemeFile: ThemeSchemeFile): Promise<ParsedThemeScheme> {
