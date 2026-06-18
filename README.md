@@ -1,26 +1,79 @@
 # muxpreview
 
-Local development server and live preview tool for muOS themes. Build, test,
-and iterate on themes without a console.
+muxpreview is a local browser preview and inspection tool for muOS themes. It
+helps theme authors inspect assets, browse scheme files, and preview
+`muxlaunch`-style screens without copying every change to a physical device.
 
-The current build provides a TypeScript theme scanner, CLI, local browser
-inspection dashboard, resolution-aware wallpaper preview, and read-only Scheme
-Explorer. The virtual display can also render and inspect real theme glyphs.
-It includes an explicitly approximate static muxlaunch fixture using real
-wallpaper and glyph assets. The fixture now consumes a conservative render
-model mapped from the selected resolution's `muxlaunch.ini`.
+The project is intentionally local-first. It runs against an unpacked theme
+folder on your machine and serves a browser UI from a loopback development
+server.
+
+## What Works Today
+
+- TypeScript theme scanner for unpacked muOS theme folders
+- CLI inspection command
+- local browser inspection dashboard
+- Preview and Inspect workspace modes
+- resolution selector for detected theme resolutions
+- resolution-aware wallpaper preview
+- read-only Scheme Explorer
+- Virtual Display Canvas with logical resolution scaling
+- Glyph Explorer with selectable real theme assets
+- mapped `muxlaunch` preview using real wallpapers, glyphs, static images, and
+  scheme values where supported
+- status/header preview with theme glyphs and mapped colours where available
+- Theme Composition analysis for baked artwork, glyph usage, overlays, and
+  duplication risks
+
+The renderer is useful for theme iteration, but it is not yet a pixel-perfect
+muOS implementation.
+
+## Screenshots
+
+Screenshots will be added once stable reference captures are available.
+
+Suggested future captures:
+
+- Preview Mode with mapped `muxlaunch`
+- Inspect Mode with Scheme Explorer
+- Glyph Explorer
+- Theme Composition report
+
+## Requirements
+
+- Node.js 20 or newer
+- pnpm
+
+## Install
 
 ```sh
 pnpm install
-pnpm run build
+```
+
+## CLI Inspection
+
+Inspect a theme folder from the terminal:
+
+```sh
 pnpm run inspect -- ./path/to/theme
 ```
 
-To inspect a theme in the built browser dashboard:
+The CLI prints detected resolutions, scheme files, fonts, glyphs, images, and
+warnings for missing expected folders.
+
+## Browser Preview
+
+Build the project and start the local server:
 
 ```sh
 pnpm run build
 pnpm start -- ./path/to/theme
+```
+
+Then open:
+
+```text
+http://127.0.0.1:4174
 ```
 
 On PowerShell, quote paths containing spaces:
@@ -29,17 +82,16 @@ On PowerShell, quote paths containing spaces:
 pnpm start -- "C:\path to\theme"
 ```
 
-The environment variable form is also supported:
+You can also configure the theme path with an environment variable:
 
 ```powershell
 $env:MUXPREVIEW_THEME_PATH = "C:\path\to\theme"
 pnpm start
 ```
 
-Open `http://127.0.0.1:4174`.
+## Development
 
-For muxpreview application development, run the API and Vite processes in
-separate terminals:
+Run the API server and Vite app in separate terminals:
 
 ```sh
 pnpm run dev:server -- ./path/to/theme
@@ -49,18 +101,31 @@ pnpm run dev:server -- ./path/to/theme
 pnpm run dev
 ```
 
-Vite proxies `/api` requests to the local server. After a build, the package
-executable can also be invoked as:
+Vite proxies `/api` requests to the local muxpreview server.
 
-```sh
-node dist/cli/index.js inspect ./path/to/theme
-```
+## Current Limits
 
-The dashboard can switch among detected resolutions and display real
-`image/wall/` assets. It can also browse scheme sections, keys, and raw text
-values without interpreting their meaning, and display shared plus
-resolution-specific glyphs in a selectable grid. Full muOS screen rendering
-and theme-file live reload remain intentionally deferred. The static muxlaunch
-mode still uses temporary labels and fallback positioning. Validated grid
-counts, basic positions, spacing, and label colours override those fallbacks
-when present; a debug panel shows mapped, missing, and unmapped values.
+- no hot reload yet
+- no theme editing
+- no `.muxthm` package loading
+- no muxplore renderer
+- no full scheme coverage
+- no verified pixel-perfect device output
+- no browser-based file writes
+
+Some theme behavior is still inferred from available reference files. When
+muxpreview cannot verify behavior, the UI should present it as approximate,
+heuristic, or unknown.
+
+## Planned Work
+
+Near-term work focuses on:
+
+- better effective scheme layering and provenance
+- broader muxlaunch layout coverage
+- focused validation rules
+- live reload for theme edits
+- CLI improvements
+- eventual public showroom support
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the detailed roadmap.

@@ -15,32 +15,46 @@ The theme inspection foundation and browser inspection iteration now include:
 - `GET /api/theme-inspection`, using the existing inspection service
 - a browser dashboard for paths, resolutions, schemes, asset counts, and
   warnings
+- Preview and Inspect workspace modes
 - resolution-aware discovery and preview of real `image/wall/` assets
 - a restricted wallpaper endpoint that serves only inspected candidates
 - read-only parsing of scheme sections, keys, values, and source lines
 - a resolution-aware Scheme Explorer with scheme selection and filtering
 - a restricted scheme endpoint that reads only inspected scheme files
 - a reusable fixed-aspect virtual display canvas
+- logical-resolution scaling inside the virtual display canvas
 - responsive rendering of shared and resolution-specific glyph assets
 - glyph selection with source, format, size, and path metadata
 - a restricted glyph endpoint that serves only inspected glyph files
+- a Glyph Explorer for browsing real theme glyphs
 - a static muxlaunch fixture composed from real wallpaper and glyph assets
 - a framework-agnostic muxlaunch scheme mapper with source provenance
 - mapped, missing, and unmapped muxlaunch value diagnostics
-- conservative application of mapped grid values in the static preview
+- conservative application of mapped grid values in the muxlaunch preview
+- a mapped muxlaunch preview using real wallpapers, static compositions,
+  glyphs, status glyphs, and selected scheme values
+- status/header rendering with current time, title, Wi-Fi, and battery
+  indicators
+- visual layer diagnostics for background, top bar, status bar, content, and
+  overlays
+- Theme Composition analysis for baked UI candidates, glyph usage, overlays,
+  scheme-driven elements, and duplication risks
+- `/api/theme-composition` for browser inspection of composition reports
 - loading and actionable configuration/error states
 - build and test tooling
 
 This iteration deliberately does not include:
 
-- scheme value interpretation or merge rules
-- full browser theme rendering
+- complete scheme value interpretation or authoritative merge rules
+- full browser theme rendering for every muOS screen
 - hot reload or filesystem watching
 - `.muxthm` package loading
+- muxplore rendering
+- browser-based theme editing
 
 The next iteration should add focused API and browser integration tests, then
-move into scheme layering and effective-value provenance. The scanner remains
-independent of React.
+move deeper into scheme layering, effective-value provenance, validation, and
+live reload. The scanner remains independent of React.
 
 ### Browser inspection decisions and limits
 
@@ -102,8 +116,9 @@ independent of React.
 
 ### Static muxlaunch preview decisions and limits
 
-- The preview uses four temporary fixture items: Explore, Favourites,
-  Applications, and Config.
+- The fallback preview uses temporary fixture items such as Explore,
+  Favourites, Applications, and Config when mapped or static assets are
+  incomplete.
 - It matches observed `muxlaunch` glyph basenames first. For the Favourites
   fixture, the observed `collection.png` asset is an accepted alias.
 - Resolution-specific glyphs are preferred over shared glyphs as an explicit
@@ -111,26 +126,47 @@ independent of React.
   precedence.
 - Missing matches fall back deterministically to unused muxlaunch glyphs, then
   to other unused glyphs visible for the selected resolution.
-- Labels, fallback positions, sizing, and most styling remain hardcoded. The
+- Labels, fallback positions, sizing, and some styling remain approximate. The
   narrow validated subset documented below may override those fallbacks.
-  Navigation state and complete muxlaunch layout behavior are not applied.
+  Navigation movement and complete muxlaunch layout behavior are not applied.
 
 ### muxlaunch scheme mapping decisions and limits
 
 - The mapper consumes the existing parsed scheme model and does not read files
   or depend on React, Node, or HTTP.
-- The server maps only the exact `muxlaunch.ini` for the selected resolution.
-  It does not infer or implement `global.ini`, `default.ini`, alternate, or
-  built-in-default layering.
+- The server currently combines the selected resolution's `default.ini` with
+  its `muxlaunch.ini` before mapping. This is a practical preview convention
+  based on observed reference files, not a verified complete muOS layering
+  rule.
+- It does not yet implement `global.ini`, alternates, built-in defaults, or
+  full effective-value provenance.
 - Known integer layout keys and six-digit colour keys are validated before
   entering the structured model. Font-related assignments are categorized as
   raw text because font semantics are not implemented.
 - Unknown keys and invalid known values remain visible with source section,
   key, raw value, line number, and reason.
 - The preview applies only bounded row/column counts, in-canvas X/Y positions,
-  spacing derived from paired dimensions, and validated label colour.
+  spacing derived from paired dimensions, selected status/header values, and
+  validated label colour.
 - Every mapped field remains optional. Missing or invalid values preserve the
   static fixture fallback.
+
+### Theme composition decisions and limits
+
+- Composition analysis is framework-agnostic and uses the existing inspection
+  model.
+- The analyzer uses paths, known muOS asset folders, neighboring assets, file
+  sizes, and scheme presence. It does not inspect image pixels.
+- `image/static/muxlaunch/*` is treated as high-confidence pre-composed
+  muxlaunch artwork.
+- `image/wall/default.*` is reported as a possible baked-UI candidate when
+  structural evidence suggests it may contain UI chrome or menu artwork.
+- Header glyphs and runtime status values are reported separately because
+  time, battery, and network state are runtime overlays, not static theme
+  content.
+- Duplication risks are advisory and evidence-based. They should guide future
+  renderer decisions but must not be treated as proof of exact device
+  compositor behavior.
 
 ## 1. Roadmap principles
 
