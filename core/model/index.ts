@@ -1,4 +1,12 @@
 export type {
+  ThemeCompositionAssetType,
+  ThemeCompositionConfidence,
+  ThemeCompositionElement,
+  ThemeCompositionReport,
+  ThemeCompositionResolutionReport,
+  ThemeCompositionRisk
+} from "./composition";
+export type {
   ThemeAsset,
   ThemeAssetGroup,
   ThemeAssetKind,
