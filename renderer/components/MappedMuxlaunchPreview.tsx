@@ -229,7 +229,7 @@ export function MappedMuxlaunchPreview({
                     {assetUrl ? (
                       <img src={assetUrl} alt="" />
                     ) : (
-                      <span aria-hidden="true">?</span>
+                      <span className="muxlaunch-missing-icon" aria-hidden="true" />
                     )}
                   </span>
                   <span

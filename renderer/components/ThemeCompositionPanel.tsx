@@ -1,7 +1,7 @@
 import type {
   ThemeCompositionElement,
   ThemeCompositionReport,
-  ThemeCompositionResolutionReport,
+  ThemeCompositionRisk,
   ThemeResolution
 } from "../../core/model";
 
@@ -38,6 +38,8 @@ export function ThemeCompositionPanel({
             {report.summary.glyphUsageCount} glyph /
             {" "}
             {report.summary.duplicationRiskCount} risks
+            {" / "}
+            {report.summary.compatibilityWarningCount} compatibility
           </p>
         )}
       </div>
@@ -73,7 +75,16 @@ export function ThemeCompositionPanel({
             emptyMessage="No scheme files detected for this resolution."
             elements={resolutionReport.schemeDrivenElements}
           />
-          <RiskGroup report={resolutionReport} />
+          <RiskGroup
+            emptyMessage="No compatibility warnings detected for this resolution."
+            risks={resolutionReport.compatibilityWarnings}
+            title="Compatibility Warnings"
+          />
+          <RiskGroup
+            emptyMessage="No duplication risks detected for this resolution."
+            risks={resolutionReport.duplicationRisks}
+            title="Potential Duplication Risks"
+          />
 
           {report.uncertainties.length > 0 && (
             <details className="composition-uncertainties">
@@ -139,20 +150,22 @@ function CompositionGroup({
 }
 
 function RiskGroup({
-  report
+  emptyMessage,
+  risks,
+  title
 }: {
-  report: ThemeCompositionResolutionReport;
+  emptyMessage: string;
+  risks: ThemeCompositionRisk[];
+  title: string;
 }) {
   return (
     <div className="composition-group">
-      <h3>Potential Duplication Risks</h3>
-      {report.duplicationRisks.length === 0 ? (
-        <p className="empty-state">
-          No duplication risks detected for this resolution.
-        </p>
+      <h3>{title}</h3>
+      {risks.length === 0 ? (
+        <p className="empty-state">{emptyMessage}</p>
       ) : (
         <div className="composition-card-grid">
-          {report.duplicationRisks.map((risk) => (
+          {risks.map((risk) => (
             <article className="composition-card is-risk" key={risk.id}>
               <div>
                 <h4>{risk.message}</h4>

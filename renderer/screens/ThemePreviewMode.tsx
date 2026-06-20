@@ -1,6 +1,7 @@
 import type {
   MuxlaunchRenderModel,
   MuxlaunchVisualLayerModel,
+  ThemeCompositionRisk,
   ThemeAsset,
   ThemeResolution,
 } from "../../core/model";
@@ -8,6 +9,7 @@ import { MappedMuxlaunchPreview } from "../components/MappedMuxlaunchPreview";
 import { ResolutionSelector } from "../components/ResolutionSelector";
 
 interface ThemePreviewModeProps {
+  compatibilityWarnings: ThemeCompositionRisk[];
   glyphs: ThemeAsset[];
   images: ThemeAsset[];
   loading: boolean;
@@ -20,6 +22,7 @@ interface ThemePreviewModeProps {
 }
 
 export function ThemePreviewMode({
+  compatibilityWarnings,
   glyphs,
   images,
   loading,
@@ -30,6 +33,10 @@ export function ThemePreviewMode({
   visualLayers,
   onResolutionChange,
 }: ThemePreviewModeProps) {
+  const visibleWarnings = compatibilityWarnings.filter(
+    (warning) => warning.severity !== "low",
+  );
+
   if (!resolution) {
     return (
       <section className="preview-workspace">
@@ -72,7 +79,18 @@ export function ThemePreviewMode({
         Use arrow keys or click items to preview selection state.
       </p>
 
-      {mappingError && (
+      {visibleWarnings.length > 0 && (
+        <section className="preview-compatibility-warning">
+          <strong>Limited preview</strong>
+          <ul>
+            {visibleWarnings.map((warning) => (
+              <li key={warning.id}>{warning.message}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {mappingError && visibleWarnings.length === 0 && (
         <p className="preview-notice">
           {mappingError} Previewing with available assets and fallback values.
         </p>

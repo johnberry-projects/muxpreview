@@ -47,7 +47,7 @@ export function StaticMuxlaunchPreview({
                 {muxlaunchAssetUrl(item) ? (
                   <img src={muxlaunchAssetUrl(item)} alt="" />
                 ) : (
-                  <span aria-hidden="true">?</span>
+                  <span className="muxlaunch-missing-icon" aria-hidden="true" />
                 )}
               </span>
               <span>{item.label}</span>

@@ -34,6 +34,7 @@ export interface ThemeCompositionResolutionReport {
   overlays: ThemeCompositionElement[];
   schemeDrivenElements: ThemeCompositionElement[];
   duplicationRisks: ThemeCompositionRisk[];
+  compatibilityWarnings: ThemeCompositionRisk[];
 }
 
 export interface ThemeCompositionReport {
@@ -45,6 +46,7 @@ export interface ThemeCompositionReport {
     glyphUsageCount: number;
     overlayCount: number;
     duplicationRiskCount: number;
+    compatibilityWarningCount: number;
   };
   resolutions: ThemeCompositionResolutionReport[];
   uncertainties: string[];

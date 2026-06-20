@@ -49,6 +49,10 @@ export function analyzeThemeComposition(
       duplicationRiskCount: sum(
         resolutions,
         (resolution) => resolution.duplicationRisks.length
+      ),
+      compatibilityWarningCount: sum(
+        resolutions,
+        (resolution) => resolution.compatibilityWarnings.length
       )
     },
     resolutions,
@@ -71,6 +75,10 @@ function analyzeResolution(
   const glyphs = [
     ...resolution.assets.glyphs,
     ...inspection.assets.glyphs.filter((asset) => !asset.resolution)
+  ];
+  const fonts = [
+    ...resolution.assets.fonts,
+    ...inspection.assets.fonts.filter((asset) => !asset.resolution)
   ];
   const schemeFiles = [
     ...resolution.schemeFiles,
@@ -99,6 +107,13 @@ function analyzeResolution(
     glyphUsage,
     overlays
   );
+  const compatibilityWarnings = detectCompatibilityWarnings(
+    resolution,
+    images,
+    glyphs,
+    fonts,
+    schemeFiles
+  );
 
   return {
     resolution: resolution.name,
@@ -106,7 +121,174 @@ function analyzeResolution(
     glyphUsage,
     overlays,
     schemeDrivenElements,
-    duplicationRisks
+    duplicationRisks,
+    compatibilityWarnings
+  };
+}
+
+function detectCompatibilityWarnings(
+  resolution: ThemeResolution,
+  images: ThemeAsset[],
+  glyphs: ThemeAsset[],
+  fonts: ThemeAsset[],
+  schemeFiles: ThemeInspectionResult["schemeFiles"]
+): ThemeCompositionRisk[] {
+  const warnings: ThemeCompositionRisk[] = [];
+  const muxlaunchScheme = schemeFiles.find(
+    (scheme) => scheme.screenId?.toLowerCase() === "muxlaunch"
+  );
+  const defaultScheme = schemeFiles.find(
+    (scheme) => scheme.fileName.toLowerCase() === "default.ini"
+  );
+  const launcherWallpaper = images.find(
+    (asset) => isDefaultWallpaper(asset) || isNamedMuxlaunchWallpaper(asset)
+  );
+  const compositionAssets = images.filter(
+    (asset) =>
+      isStaticMuxlaunchImage(asset) ||
+      isMuxlaunchWallState(asset) ||
+      normalizedPath(asset).includes("/image/grid/muxlaunch/")
+  );
+  const launcherGlyphs = glyphs.filter((asset) =>
+    normalizedPath(asset).includes("/glyph/muxlaunch/")
+  );
+  const headerGlyphs = glyphs.filter((asset) =>
+    normalizedPath(asset).includes("/glyph/header/")
+  );
+  const bakedWallStates = images.filter(isMuxlaunchWallState);
+
+  if (!muxlaunchScheme) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "missing-muxlaunch-scheme",
+        "high",
+        "No muxlaunch.ini is available; the preview uses fallback layout and styling.",
+        [],
+        ["No selected-resolution or shared muxlaunch scheme was detected."]
+      )
+    );
+  }
+
+  if (!defaultScheme) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "missing-default-scheme",
+        "low",
+        "No default.ini is available; inherited header and status values may be incomplete.",
+        muxlaunchScheme ? [muxlaunchScheme.relativePath] : [],
+        ["The preview can continue with muxlaunch values and renderer defaults."]
+      )
+    );
+  }
+
+  if (!launcherWallpaper && bakedWallStates.length === 0) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "missing-launcher-wallpaper",
+        "medium",
+        "No default or muxlaunch wallpaper is available; the canvas uses its fallback background.",
+        [],
+        ["Unrelated screen wallpapers are intentionally not reused."]
+      )
+    );
+  }
+
+  if (compositionAssets.length === 0 && launcherGlyphs.length === 0) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "missing-launcher-content",
+        "high",
+        "No muxlaunch menu artwork or glyphs are available; a label-only structural preview is shown.",
+        [],
+        [
+          "Expected one of image/grid/muxlaunch, image/static/muxlaunch, image/wall/muxlaunch/<item>, or glyph/muxlaunch."
+        ]
+      )
+    );
+  }
+
+  if (headerGlyphs.length === 0 && bakedWallStates.length === 0) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "missing-header-glyphs",
+        "medium",
+        "No header glyphs are available; status indicators use CSS fallbacks.",
+        [],
+        ["No glyph/header assets were detected for this resolution or at theme root."]
+      )
+    );
+  }
+
+  if (fonts.length === 0) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "missing-fonts",
+        "low",
+        "No theme font assets are available; browser fallback fonts are used.",
+        [],
+        ["Font fidelity cannot be evaluated for this resolution."]
+      )
+    );
+  }
+
+  const rootLauncherAssets = [...compositionAssets, ...launcherGlyphs].filter(
+    (asset) => !asset.resolution
+  );
+  const resolutionLauncherAssets = [
+    ...compositionAssets,
+    ...launcherGlyphs
+  ].filter((asset) => asset.resolution === resolution.name);
+
+  if (rootLauncherAssets.length > 0 && resolutionLauncherAssets.length === 0) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "shared-root-launcher-assets",
+        "low",
+        "This resolution relies on shared root muxlaunch assets.",
+        rootLauncherAssets.slice(0, 4).map((asset) => asset.relativePath),
+        ["Root assets are accepted as a preview fallback for every resolution."]
+      )
+    );
+  }
+
+  if (rootLauncherAssets.length > 0 && resolutionLauncherAssets.length > 0) {
+    warnings.push(
+      compatibilityWarning(
+        resolution,
+        "mixed-launcher-asset-scopes",
+        "low",
+        "Both shared and resolution-specific muxlaunch assets exist; resolution-specific files are preferred.",
+        resolutionLauncherAssets.slice(0, 4).map((asset) => asset.relativePath),
+        ["This precedence is a muxpreview convention, not verified muOS behavior."]
+      )
+    );
+  }
+
+  return warnings;
+}
+
+function compatibilityWarning(
+  resolution: ThemeResolution,
+  id: string,
+  severity: ThemeCompositionRisk["severity"],
+  message: string,
+  sourceFiles: string[],
+  evidence: string[]
+): ThemeCompositionRisk {
+  return {
+    id: `${resolution.name}:compatibility:${id}`,
+    severity,
+    message,
+    evidence,
+    resolution: resolution.name,
+    sourceFiles
   };
 }
 
@@ -441,6 +623,10 @@ function isWallpaper(asset: ThemeAsset): boolean {
 
 function isDefaultWallpaper(asset: ThemeAsset): boolean {
   return isWallpaper(asset) && isNamed(asset, "default");
+}
+
+function isNamedMuxlaunchWallpaper(asset: ThemeAsset): boolean {
+  return /(?:^|\/)image\/wall\/muxlaunch\.[^/]+$/i.test(asset.relativePath);
 }
 
 function isStaticMuxlaunchImage(asset: ThemeAsset): boolean {

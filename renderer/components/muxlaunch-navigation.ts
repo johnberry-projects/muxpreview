@@ -22,7 +22,7 @@ export interface ItemPosition {
 export const COMPOSITION_REGIONS: CompositionRegion[] = [
   { aliases: ["explore"], left: 0.065, top: 0.19, width: 0.285, height: 0.45 },
   {
-    aliases: ["collection", "favourites", "favorites"],
+    aliases: ["collection", "favourite", "favourites", "favorites"],
     left: 0.355,
     top: 0.19,
     width: 0.285,

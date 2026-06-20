@@ -36,6 +36,21 @@ export function ThemeInspectionScreen({
     inspection.resolutions.find(
       (resolution) => resolution.name === selectedResolutionName,
     ) ?? inspection.resolutions[0];
+  const compatibilityWarnings = selectedResolution
+    ? compositionReport?.resolutions.find(
+        (report) => report.resolution === selectedResolution.name,
+      )?.compatibilityWarnings ?? []
+    : [];
+
+  useEffect(() => {
+    const resolutionStillExists = inspection.resolutions.some(
+      (resolution) => resolution.name === selectedResolutionName,
+    );
+
+    if (!resolutionStillExists) {
+      setSelectedResolutionName(inspection.resolutions[0]?.name ?? "");
+    }
+  }, [inspection, selectedResolutionName]);
 
   useEffect(() => {
     if (!selectedResolution) {
@@ -150,6 +165,7 @@ export function ThemeInspectionScreen({
 
       {workspaceMode === "preview" ? (
         <ThemePreviewMode
+          compatibilityWarnings={compatibilityWarnings}
           glyphs={inspection.assets.glyphs}
           images={inspection.assets.images}
           loading={muxlaunchLoading}

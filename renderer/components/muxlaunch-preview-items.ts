@@ -13,7 +13,7 @@ const LAUNCH_ITEMS: Array<
   { label: "Explore", aliases: ["explore"] },
   {
     label: "Favourites",
-    aliases: ["collection", "favourites", "favorites"],
+    aliases: ["collection", "favourite", "favourites", "favorites"],
   },
   { label: "Applications", aliases: ["apps", "applications", "app"] },
   { label: "Configuration", aliases: ["config", "configuration", "settings"] },

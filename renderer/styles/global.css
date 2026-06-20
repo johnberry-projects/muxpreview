@@ -189,6 +189,23 @@ body {
   text-align: center;
 }
 
+.preview-compatibility-warning {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #66512a;
+  border-radius: 0.5rem;
+  color: #f2c879;
+  background: #211c13;
+  font-size: 0.78rem;
+}
+
+.preview-compatibility-warning ul {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+}
+
 .inspect-overview {
   padding: 1rem 1.25rem;
   border: 1px solid #2b333d;
@@ -689,6 +706,12 @@ body {
 
 .muxlaunch-mapped-icon > span {
   font-size: 32px;
+}
+
+.muxlaunch-missing-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .muxlaunch-mapped-label {
