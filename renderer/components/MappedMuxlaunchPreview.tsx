@@ -1,5 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type {
+  CSSProperties,
+  KeyboardEvent,
+} from "react";
 
 import type {
   MuxlaunchRenderModel,
@@ -11,6 +14,12 @@ import {
   muxlaunchAssetUrl,
   selectMuxlaunchItems,
 } from "./muxlaunch-preview-items";
+import {
+  compositionTargets,
+  itemPositions,
+  navigateSelection,
+  type CompositionRegion,
+} from "./muxlaunch-navigation";
 import { MuxlaunchStatusBar } from "./MuxlaunchStatusBar";
 import { VirtualDisplayCanvas } from "./VirtualDisplayCanvas";
 
@@ -42,9 +51,11 @@ export function MappedMuxlaunchPreview({
   showMetricsOverlay = false,
   visualLayers,
 }: MappedMuxlaunchPreviewProps) {
+  const previewRef = useRef<HTMLElement>(null);
   const [backgroundFailed, setBackgroundFailed] = useState(false);
   const [contentFailed, setContentFailed] = useState(false);
   const [overlayFailed, setOverlayFailed] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const items = useMemo(
     () =>
       selectMuxlaunchItems(
@@ -56,6 +67,23 @@ export function MappedMuxlaunchPreview({
     [glyphs, images, renderModel, resolution.name],
   );
   const gridStyle = createMappedGridStyle(renderModel, resolution);
+  const selectedItem = items[selectedIndex] ?? items[0];
+  const compositionAsset = useMemo(
+    () =>
+      selectCompositionAsset(
+        images,
+        resolution.name,
+        visualLayers?.contentMode,
+        selectedItem?.aliases,
+      ) ?? visualLayers?.contentAsset,
+    [
+      images,
+      resolution.name,
+      selectedItem?.aliases,
+      visualLayers?.contentAsset,
+      visualLayers?.contentMode,
+    ],
+  );
 
   useEffect(() => {
     setBackgroundFailed(false);
@@ -67,6 +95,20 @@ export function MappedMuxlaunchPreview({
     visualLayers?.contentAsset?.relativePath,
     visualLayers?.overlayAsset?.relativePath,
   ]);
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [resolution.name, visualLayers?.contentMode]);
+
+  useEffect(() => {
+    setContentFailed(false);
+  }, [compositionAsset?.relativePath]);
+
+  useEffect(() => {
+    if (selectedIndex >= items.length) {
+      setSelectedIndex(Math.max(0, items.length - 1));
+    }
+  }, [items.length, selectedIndex]);
 
   const backgroundUrl =
     visualLayers?.backgroundAsset && !backgroundFailed
@@ -81,13 +123,45 @@ export function MappedMuxlaunchPreview({
   const staticContentUrl =
     visualLayers &&
     visualLayers.contentMode !== "grid" &&
-    visualLayers.contentAsset &&
+    compositionAsset &&
     !contentFailed
-      ? themeImageUrl(visualLayers.contentAsset.relativePath)
+      ? themeImageUrl(compositionAsset.relativePath)
       : undefined;
 
+  function selectItem(index: number): void {
+    setSelectedIndex(Math.min(Math.max(index, 0), items.length - 1));
+    previewRef.current?.focus({ preventScroll: true });
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLElement>): void {
+    const columns = bounded(renderModel?.layout.columnCount, 1, 8) ?? 4;
+    const positions = itemPositions(
+      items,
+      visualLayers?.contentMode ?? "grid",
+      columns,
+    );
+    const nextIndex = navigateSelection(
+      selectedIndex,
+      event.key,
+      positions,
+    );
+
+    if (nextIndex === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+    setSelectedIndex(nextIndex);
+  }
+
   return (
-    <figure className="mapped-muxlaunch-preview">
+    <figure
+      aria-label="Interactive muxlaunch selection preview"
+      className="mapped-muxlaunch-preview"
+      onKeyDown={handleKeyDown}
+      ref={previewRef}
+      tabIndex={0}
+    >
       <VirtualDisplayCanvas
         className="muxlaunch-display mapped-muxlaunch-display"
         resolution={resolution}
@@ -107,23 +181,46 @@ export function MappedMuxlaunchPreview({
           />
         )}
         {staticContentUrl ? (
-          <img
-            className="muxlaunch-static-composition"
-            src={staticContentUrl}
-            alt=""
-            onError={() => setContentFailed(true)}
-          />
+          <>
+            <img
+              className="muxlaunch-static-composition"
+              src={staticContentUrl}
+              alt=""
+              onError={() => setContentFailed(true)}
+            />
+            <div
+              aria-label="muxlaunch menu items"
+              className="muxlaunch-composition-hotspots"
+              role="group"
+            >
+              {compositionTargets(items).map(({ index, item, region }) => (
+                <button
+                  aria-label={item.label}
+                  aria-pressed={index === selectedIndex}
+                  className="muxlaunch-composition-hotspot"
+                  key={item.label}
+                  onClick={() => selectItem(index)}
+                  style={compositionRegionStyle(region)}
+                  title={item.label}
+                  type="button"
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div className="muxlaunch-mapped-grid" style={gridStyle.grid}>
             {items.map((item, index) => {
-              const selected = index === 0;
+              const selected = index === selectedIndex;
               const assetUrl = muxlaunchAssetUrl(item);
 
               return (
-                <article
+                <button
+                  aria-pressed={selected}
                   className={`muxlaunch-mapped-item${selected ? " is-selected" : ""}`}
                   key={item.label}
+                  onClick={() => selectItem(index)}
                   style={selected ? gridStyle.focusCell : gridStyle.cell}
+                  type="button"
                 >
                   <span
                     className="muxlaunch-mapped-icon"
@@ -141,14 +238,14 @@ export function MappedMuxlaunchPreview({
                   >
                     {item.label}
                   </span>
-                </article>
+                </button>
               );
             })}
             <p
               className="muxlaunch-current-label"
               style={gridStyle.currentLabel}
             >
-              {items[0]?.label}
+              {selectedItem?.label}
             </p>
           </div>
         )}
@@ -286,6 +383,55 @@ function createMappedGridStyle(
       fontSize: currentLabelFontSize,
     } satisfies CSSProperties,
   };
+}
+
+function selectCompositionAsset(
+  images: ThemeAsset[],
+  resolutionName: string,
+  contentMode: MuxlaunchVisualLayerModel["contentMode"] | undefined,
+  aliases: string[] | undefined,
+): ThemeAsset | undefined {
+  if (!aliases || contentMode === undefined || contentMode === "grid") {
+    return undefined;
+  }
+
+  const pathSegment =
+    contentMode === "baked"
+      ? "image/wall/muxlaunch/"
+      : "image/static/muxlaunch/";
+  const candidates = images
+    .filter(
+      (asset) =>
+        (!asset.resolution || asset.resolution === resolutionName) &&
+        asset.relativePath.toLowerCase().includes(pathSegment),
+    )
+    .sort((left, right) => {
+      const resolutionPriority =
+        Number(right.resolution === resolutionName) -
+        Number(left.resolution === resolutionName);
+
+      return (
+        resolutionPriority ||
+        left.relativePath.localeCompare(right.relativePath)
+      );
+    });
+
+  return candidates.find((asset) => aliases.includes(fileStem(asset)));
+}
+
+function compositionRegionStyle(region: CompositionRegion): CSSProperties {
+  return {
+    height: `${region.height * 100}%`,
+    left: `${region.left * 100}%`,
+    top: `${region.top * 100}%`,
+    width: `${region.width * 100}%`,
+  };
+}
+
+function fileStem(asset: ThemeAsset): string {
+  return asset.fileName
+    .slice(0, -asset.extension.length)
+    .toLocaleLowerCase();
 }
 
 function themeImageUrl(relativePath: string): string {

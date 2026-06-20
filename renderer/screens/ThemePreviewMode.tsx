@@ -68,6 +68,10 @@ export function ThemePreviewMode({
         )}
       </div>
 
+      <p className="preview-interaction-hint">
+        Use arrow keys or click items to preview selection state.
+      </p>
+
       {mappingError && (
         <p className="preview-notice">
           {mappingError} Previewing with available assets and fallback values.

@@ -182,6 +182,13 @@ body {
   font-size: 0.8rem;
 }
 
+.preview-interaction-hint {
+  margin: 0.75rem 0 0;
+  color: #8995a3;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
 .inspect-overview {
   padding: 1rem 1.25rem;
   border: 1px solid #2b333d;
@@ -412,6 +419,11 @@ body {
   margin: 0;
 }
 
+.mapped-muxlaunch-preview:focus-visible {
+  outline: 2px solid #f3bd3d;
+  outline-offset: 0.4rem;
+}
+
 .muxlaunch-display .virtual-display-content {
   background: transparent;
 }
@@ -483,6 +495,28 @@ body {
   width: 100%;
   height: 100%;
   object-fit: fill;
+}
+
+.muxlaunch-composition-hotspots {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.muxlaunch-composition-hotspot {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.muxlaunch-composition-hotspot:focus-visible {
+  outline: 3px solid rgb(255 255 255 / 85%);
+  outline-offset: -3px;
 }
 
 .muxlaunch-status-bar {
@@ -614,12 +648,20 @@ body {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  padding: 0;
   border-style: solid;
+  cursor: pointer;
+  font: inherit;
   text-align: center;
   text-shadow: 0 1px 3px #000;
   transition:
     box-shadow 120ms ease,
     transform 120ms ease;
+}
+
+.muxlaunch-mapped-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -3px;
 }
 
 .muxlaunch-mapped-item.is-selected {
