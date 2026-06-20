@@ -18,7 +18,6 @@ type StatusBarStyle = CSSProperties & {
   "--status-background"?: string;
   "--status-battery-opacity"?: number;
   "--status-battery-color"?: string;
-  "--status-color"?: string;
   "--status-font-size"?: string;
   "--status-height"?: string;
   "--status-icon-height"?: string;
@@ -26,6 +25,8 @@ type StatusBarStyle = CSSProperties & {
   "--status-network-opacity"?: number;
   "--status-padding-left"?: string;
   "--status-padding-right"?: string;
+  "--status-time-color"?: string;
+  "--status-title-color"?: string;
 };
 
 type StatusIconStyle = CSSProperties & {
@@ -153,14 +154,14 @@ function createStatusBarStyle(
   const fallbackScale = Math.min(resolution.width / 640, resolution.height / 480);
   const statusBar = renderModel?.statusBar;
   const height = positive(statusBar?.headerHeight) ?? Math.round(48 * fallbackScale);
-  const color =
-    colorWithAlpha(
-      statusBar?.headerText ??
-        statusBar?.dateTimeText ??
-        statusBar?.networkActive ??
-        "#FFFFFF",
-      statusBar?.headerTextAlpha ?? statusBar?.dateTimeAlpha ?? 255
-    );
+  const titleColor = colorWithAlpha(
+    statusBar?.headerText ?? statusBar?.dateTimeText ?? "#FFFFFF",
+    statusBar?.headerTextAlpha ?? statusBar?.dateTimeAlpha ?? 255
+  );
+  const timeColor = colorWithAlpha(
+    statusBar?.dateTimeText ?? statusBar?.headerText ?? "#FFFFFF",
+    statusBar?.dateTimeAlpha ?? statusBar?.headerTextAlpha ?? 255
+  );
   const headerBackgroundAlpha = positiveOrZero(
     statusBar?.headerBackgroundAlpha
   );
@@ -178,7 +179,6 @@ function createStatusBarStyle(
     "--status-battery-opacity": alphaOpacity(
       statusBar?.batteryNormalAlpha ?? statusBar?.batteryActiveAlpha
     ),
-    "--status-color": color,
     "--status-font-size": `${Math.max(10, Math.round(height * 0.32))}px`,
     "--status-height": `${height}px`,
     "--status-icon-height": `${Math.max(14, Math.round(height * 0.44))}px`,
@@ -188,7 +188,9 @@ function createStatusBarStyle(
       statusBar?.networkActiveAlpha ?? statusBar?.networkNormalAlpha
     ),
     "--status-padding-left": `${positive(statusBar?.datePaddingLeft) ?? Math.round(18 * fallbackScale)}px`,
-    "--status-padding-right": `${positive(statusBar?.statusPaddingRight) ?? Math.round(20 * fallbackScale)}px`
+    "--status-padding-right": `${positive(statusBar?.statusPaddingRight) ?? Math.round(20 * fallbackScale)}px`,
+    "--status-time-color": timeColor,
+    "--status-title-color": titleColor
   };
 }
 

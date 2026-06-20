@@ -150,6 +150,11 @@ live reload. The scanner remains independent of React.
   validated label colour.
 - Every mapped field remains optional. Missing or invalid values preserve the
   static fixture fallback.
+- No muxlaunch localization catalogue was found in the available muOS theme,
+  init, or non-catalogue info references. The header therefore uses `Main
+  Menu` as a neutral preview fallback; localized device titles such as `MENU
+  PRINCIPAL` remain runtime data until a verified translation source is
+  available.
 
 ### Theme composition decisions and limits
 

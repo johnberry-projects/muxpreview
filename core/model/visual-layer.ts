@@ -11,6 +11,7 @@ export type MuxlaunchVisualLayerState =
   | "rendered"
   | "embedded"
   | "available"
+  | "suppressed"
   | "generated";
 
 export interface MuxlaunchVisualLayer {
@@ -26,7 +27,7 @@ export interface MuxlaunchVisualLayerModel {
   resolution: string;
   backgroundAsset?: ThemeAsset;
   contentAsset?: ThemeAsset;
-  contentMode: "grid" | "static";
+  contentMode: "baked" | "grid" | "static";
   overlayAsset?: ThemeAsset;
   overlayEnabled: boolean;
   layers: MuxlaunchVisualLayer[];

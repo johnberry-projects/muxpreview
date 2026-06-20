@@ -119,6 +119,7 @@ function detectBakedUiElements(
   const muxlaunchWallpaper = wallpapers.find((asset) =>
     isNamed(asset, "muxlaunch")
   );
+  const bakedMuxlaunchWallStates = images.filter(isMuxlaunchWallState);
   const staticMuxlaunchImages = images.filter(isStaticMuxlaunchImage);
   const elements: ThemeCompositionElement[] = [];
 
@@ -152,6 +153,21 @@ function detectBakedUiElements(
       evidence: [
         "Found a screen-specific image/wall/muxlaunch.* asset.",
         "This asset may already include decorative launcher chrome."
+      ]
+    });
+  }
+
+  for (const asset of bakedMuxlaunchWallStates) {
+    elements.push({
+      id: `${resolution.name}:wall-state:${asset.relativePath}`,
+      label: `Baked muxlaunch wall state: ${asset.fileName}`,
+      assetType: "static-composition",
+      confidence: "high",
+      resolution: resolution.name,
+      sourceFile: asset.relativePath,
+      evidence: [
+        "Asset lives under image/wall/muxlaunch/<item>.",
+        "Observed reference assets in this folder contain complete launcher states."
       ]
     });
   }
@@ -429,6 +445,10 @@ function isDefaultWallpaper(asset: ThemeAsset): boolean {
 
 function isStaticMuxlaunchImage(asset: ThemeAsset): boolean {
   return /(?:^|\/)image\/static\/muxlaunch\//i.test(asset.relativePath);
+}
+
+function isMuxlaunchWallState(asset: ThemeAsset): boolean {
+  return /(?:^|\/)image\/wall\/muxlaunch\/[^/]+$/i.test(asset.relativePath);
 }
 
 function isNamed(asset: ThemeAsset, name: string): boolean {

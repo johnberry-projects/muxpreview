@@ -497,7 +497,6 @@ body {
   height: var(--status-height);
   padding-right: var(--status-padding-right);
   padding-left: var(--status-padding-left);
-  color: var(--status-color);
   background: var(--status-background);
   font-size: var(--status-font-size);
   font-weight: 700;
@@ -516,6 +515,7 @@ body {
 
 .muxlaunch-status-time {
   justify-content: flex-start;
+  color: var(--status-time-color);
   font-variant-numeric: tabular-nums;
 }
 
@@ -526,6 +526,7 @@ body {
   right: 0;
   left: 0;
   padding: 0 25%;
+  color: var(--status-title-color);
   overflow: hidden;
   text-align: center;
   text-overflow: ellipsis;
@@ -760,6 +761,11 @@ body {
 .visual-layer-state.is-embedded {
   color: #11151a;
   background: #f3bd3d;
+}
+
+.visual-layer-state.is-suppressed {
+  color: #cbd3dc;
+  background: #3a4551;
 }
 
 .composition-summary {

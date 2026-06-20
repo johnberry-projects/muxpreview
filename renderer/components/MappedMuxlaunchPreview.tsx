@@ -79,7 +79,8 @@ export function MappedMuxlaunchPreview({
       ? themeImageUrl(visualLayers.overlayAsset.relativePath)
       : undefined;
   const staticContentUrl =
-    visualLayers?.contentMode === "static" &&
+    visualLayers &&
+    visualLayers.contentMode !== "grid" &&
     visualLayers.contentAsset &&
     !contentFailed
       ? themeImageUrl(visualLayers.contentAsset.relativePath)
@@ -97,12 +98,14 @@ export function MappedMuxlaunchPreview({
         onOverlayError={() => setOverlayFailed(true)}
         showMetricsOverlay={showMetricsOverlay}
       >
-        <MuxlaunchStatusBar
-          glyphs={glyphs}
-          renderModel={renderModel}
-          resolution={resolution}
-          title="Main Menu"
-        />
+        {visualLayers?.contentMode !== "baked" && (
+          <MuxlaunchStatusBar
+            glyphs={glyphs}
+            renderModel={renderModel}
+            resolution={resolution}
+            title="Main Menu"
+          />
+        )}
         {staticContentUrl ? (
           <img
             className="muxlaunch-static-composition"

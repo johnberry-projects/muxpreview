@@ -25,6 +25,11 @@ export function resolveMuxlaunchVisualLayers(
     .filter(
       (asset) => !asset.resolution || asset.resolution === resolution.name
     );
+  const bakedAssets = inspection.assets.images
+    .filter(isMuxlaunchWallState)
+    .filter(
+      (asset) => !asset.resolution || asset.resolution === resolution.name
+    );
   const gridAssets = [
     ...inspection.assets.images.filter(isMuxlaunchGridImage),
     ...inspection.assets.glyphs.filter(isMuxlaunchGlyph)
@@ -37,13 +42,28 @@ export function resolveMuxlaunchVisualLayers(
       (asset) => !asset.resolution || asset.resolution === resolution.name
     )
     .sort(comparePaths);
-  const contentAsset = selectAsset(
+  const bakedContentAsset = selectAsset(
+    bakedAssets,
+    resolution.name,
+    compareStaticContent
+  );
+  const staticContentAsset = selectAsset(
     staticAssets,
     resolution.name,
     compareStaticContent
   );
-  const contentMode = contentAsset ? "static" : "grid";
-  const contentAssets = contentMode === "static" ? staticAssets : gridAssets;
+  const contentAsset = bakedContentAsset ?? staticContentAsset;
+  const contentMode = bakedContentAsset
+    ? "baked"
+    : staticContentAsset
+      ? "static"
+      : "grid";
+  const contentAssets =
+    contentMode === "baked"
+      ? bakedAssets
+      : contentMode === "static"
+        ? staticAssets
+        : gridAssets;
   const overlayEnabled =
     renderModel?.visual.imageOverlayEnabled === true && Boolean(overlayAsset);
 
@@ -79,10 +99,17 @@ export function resolveMuxlaunchVisualLayers(
         id: "status-bar",
         kind: "status-bar",
         label: "Status bar",
-        state: statusAssets.length > 0 ? "rendered" : "generated",
+        state:
+          contentMode === "baked"
+            ? "suppressed"
+            : statusAssets.length > 0
+              ? "rendered"
+              : "generated",
         assetPaths: statusAssets.map((asset) => asset.relativePath),
         note:
-          statusAssets.length > 0
+          contentMode === "baked"
+            ? "Suppressed because a full nested muxlaunch wall composition is rendered."
+            : statusAssets.length > 0
             ? "Header glyphs are rendered over the top bar with mapped colors where available."
             : "No header glyphs were detected; CSS fallback indicators are used."
       },
@@ -92,8 +119,10 @@ export function resolveMuxlaunchVisualLayers(
         label: "Launcher content",
         state: contentAsset ? "rendered" : "generated",
         assetPaths: contentAssets.map((asset) => asset.relativePath),
-        note: contentAsset
-          ? "A full static muxlaunch composition is rendered for the selected fixture item."
+        note: bakedContentAsset
+          ? "A full nested muxlaunch wall state is rendered without generated menu or status layers."
+          : staticContentAsset
+            ? "A static muxlaunch content composition is rendered for the selected fixture item."
           : "Menu cells are rendered from inspected grid images or glyph fallbacks."
       },
       {
@@ -173,6 +202,10 @@ function isMuxlaunchGridImage(asset: ThemeAsset): boolean {
 
 function isMuxlaunchStaticImage(asset: ThemeAsset): boolean {
   return asset.relativePath.toLowerCase().includes("image/static/muxlaunch/");
+}
+
+function isMuxlaunchWallState(asset: ThemeAsset): boolean {
+  return asset.relativePath.toLowerCase().includes("image/wall/muxlaunch/");
 }
 
 function isMuxlaunchGlyph(asset: ThemeAsset): boolean {

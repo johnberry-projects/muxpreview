@@ -75,6 +75,38 @@ describe("resolveMuxlaunchVisualLayers", () => {
       assetPaths: []
     });
   });
+
+  it("uses nested muxlaunch wall states as baked full compositions", () => {
+    const inspection = createInspection({
+      images: [
+        image("640x480/image/wall/default.png", "640x480"),
+        image("640x480/image/wall/muxlaunch/explore.png", "640x480")
+      ],
+      glyphs: [image("glyph/header/network_active.png", "640x480")]
+    });
+    const model = resolveMuxlaunchVisualLayers(
+      inspection,
+      inspection.resolutions[0]
+    );
+
+    expect(model.contentMode).toBe("baked");
+    expect(model.contentAsset?.relativePath).toBe(
+      "640x480/image/wall/muxlaunch/explore.png"
+    );
+    expect(model.layers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "status-bar",
+          state: "suppressed"
+        }),
+        expect.objectContaining({
+          kind: "content",
+          state: "rendered",
+          assetPaths: ["640x480/image/wall/muxlaunch/explore.png"]
+        })
+      ])
+    );
+  });
 });
 
 function createInspection({
