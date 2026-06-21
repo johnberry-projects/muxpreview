@@ -1,4 +1,6 @@
 export { ThemeInspectionService } from "./theme-inspection-service";
+export { detectThemeFamily } from "./theme-family-detector";
+export type { ThemeFamilyDetectionInput } from "./theme-family-detector";
 export { analyzeThemeComposition } from "./theme-composition-service";
 export { resolveMuxlaunchVisualLayers } from "./muxlaunch-visual-layer-service";
 export { mapMuxlaunchScheme, parseThemeScheme } from "./parser";
@@ -19,6 +21,8 @@ export type {
   ThemeSchemeParseIssue,
   ThemeSchemeSection,
   ThemeSchemeSource,
+  ThemeFamily,
+  ThemeFamilyDetection,
   ThemeCompositionElement,
   ThemeCompositionReport,
   ThemeCompositionResolutionReport,

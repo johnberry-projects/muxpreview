@@ -7,6 +7,7 @@ import type {
 } from "./model";
 import { classifyThemePath } from "./parser";
 import type { ThemeFileScanner } from "./scanner";
+import { detectThemeFamily } from "./theme-family-detector";
 import { createInspectionWarnings } from "./validation";
 
 export class ThemeInspectionService {
@@ -70,6 +71,11 @@ export class ThemeInspectionService {
       schemeFiles,
       assets
     );
+    const themeFamily = detectThemeFamily({
+      resolutions: sortedResolutions,
+      schemeFiles,
+      assets
+    });
 
     return {
       themePath: scan.rootPath,
@@ -77,6 +83,7 @@ export class ThemeInspectionService {
       resolutions: sortedResolutions,
       schemeFiles,
       assets,
+      themeFamily,
       warnings,
       scannedFileCount: scan.files.length
     };

@@ -186,19 +186,29 @@ components must not independently select `resolution.wallpaper`.
 
 ## Family Detection
 
-Detection is per resolution and may be uncertain.
+Milestone B performs theme-level detection from the complete inspection
+inventory. It does not use theme names, parse image pixels, or change renderer
+behavior.
 
-- **Baked UI:** full state assets under a muxlaunch wall/state structure.
-- **Static composition:** separate static muxlaunch states plus a background.
-- **Composited grid:** separate grid images or menu glyphs.
-- **Wallpaper/glyph mixed:** background plus separately composited runtime
-  assets without a complete verified grid model.
-- **Scheme-only/partial:** schemes exist but visual requirements do not.
-- **Empty/unsupported:** no usable theme structure.
+Rules are evaluated in this order:
 
-If multiple families match, full compositions take precedence only when their
-dimensions and role are compatible with the selected resolution. The manifest
-must report the ambiguity.
+| Family | Observable rule | Confidence |
+| --- | --- | ---: |
+| `baked-ui` | One or more images at `image/wall/muxlaunch/<item>.*` | `0.98` |
+| `static-composition` | One or more images at `image/static/muxlaunch/<item>.*` | `0.97` |
+| `composited-grid` | Images at `image/grid/muxlaunch/<item>.*` or glyphs at `glyph/muxlaunch/<item>.*` | `0.90`; `0.96` when both are present |
+| `scheme-only-partial` | Scheme files exist but no raster images or glyphs exist | `0.90` with a resolution; otherwise `0.75` |
+| `empty-unsupported` | No recognized family | `1.00` when structurally empty; `0.50` when assets exist in an unsupported structure |
+
+The inspection model exposes the selected family, confidence, and human-
+readable evidence. The API returns the same data because it serializes the
+inspection model directly. Inspect Mode displays it without using it to choose
+a renderer.
+
+Precedence is intentionally conservative: known full compositions win over
+grid structures. This is a fixture-backed compatibility rule, not verified
+muOS behavior. Detection is currently theme-level; per-resolution family
+variation and ambiguity reporting remain future loading-contract work.
 
 ## Fallback Strategy
 

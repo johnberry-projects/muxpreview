@@ -13,6 +13,7 @@ import { ResolutionSelector } from "../components/ResolutionSelector";
 import { SchemeExplorer } from "../components/SchemeExplorer";
 import { StaticMuxlaunchPreview } from "../components/StaticMuxlaunchPreview";
 import { ThemeCompositionPanel } from "../components/ThemeCompositionPanel";
+import { ThemeFamilySummary } from "../components/ThemeFamilySummary";
 import { VisualLayersPanel } from "../components/VisualLayersPanel";
 import { WarningList } from "../components/WarningList";
 
@@ -62,6 +63,8 @@ export function ThemeInspectMode({
         <InspectionStat label="Glyphs" value={inspection.assets.glyphs.length} />
         <InspectionStat label="Fonts" value={inspection.assets.fonts.length} />
       </section>
+
+      <ThemeFamilySummary detection={inspection.themeFamily} />
 
       {resolution && (
         <section className="inspection-section">

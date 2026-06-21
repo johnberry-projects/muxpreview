@@ -840,6 +840,20 @@ body {
   font-size: 0.75rem;
 }
 
+.family-confidence {
+  color: #8995a3;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.family-name {
+  margin: 0 0 1rem;
+  color: #f3bd3d;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
 .composition-group {
   display: grid;
   gap: 0.75rem;

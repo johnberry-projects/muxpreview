@@ -1,5 +1,18 @@
 export type ThemeAssetKind = "font" | "glyph" | "image" | "unknown";
 
+export type ThemeFamily =
+  | "baked-ui"
+  | "composited-grid"
+  | "static-composition"
+  | "scheme-only-partial"
+  | "empty-unsupported";
+
+export interface ThemeFamilyDetection {
+  family: ThemeFamily;
+  confidence: number;
+  evidence: string[];
+}
+
 export interface ThemeAsset {
   relativePath: string;
   fileName: string;
@@ -52,6 +65,7 @@ export interface ThemeInspectionResult {
   resolutions: ThemeResolution[];
   schemeFiles: ThemeSchemeFile[];
   assets: ThemeAssetGroup;
+  themeFamily: ThemeFamilyDetection;
   warnings: ThemeInspectionWarning[];
   scannedFileCount: number;
 }

@@ -80,6 +80,11 @@ function createInspection({
     resolutions: [resolution],
     schemeFiles: schemes,
     assets: { fonts, glyphs: [], images, unknown: [] },
+    themeFamily: {
+      family: "scheme-only-partial",
+      confidence: 1,
+      evidence: ["Synthetic test inspection."]
+    },
     warnings: [],
     scannedFileCount: fonts.length + images.length + schemes.length
   };

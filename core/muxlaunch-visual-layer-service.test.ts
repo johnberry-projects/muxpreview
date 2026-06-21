@@ -144,6 +144,11 @@ function createInspection({
       images,
       unknown: []
     },
+    themeFamily: {
+      family: "composited-grid",
+      confidence: 1,
+      evidence: ["Synthetic test inspection."]
+    },
     warnings: [],
     scannedFileCount: images.length + glyphs.length
   };

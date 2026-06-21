@@ -10,6 +10,8 @@ export type {
   ThemeAsset,
   ThemeAssetGroup,
   ThemeAssetKind,
+  ThemeFamily,
+  ThemeFamilyDetection,
   ThemeInspectionResult,
   ThemeInspectionWarning,
   ThemeInspectionWarningCode,

@@ -16,6 +16,8 @@ describe("theme compatibility fixtures", () => {
   it.each([
     {
       family: "baked-ui",
+      detectedFamily: "baked-ui",
+      confidence: 0.98,
       scannedFileCount: 5,
       resolutions: ["640x480"],
       schemes: ["default.ini", "muxlaunch.ini"],
@@ -28,6 +30,8 @@ describe("theme compatibility fixtures", () => {
     },
     {
       family: "composited-grid",
+      detectedFamily: "composited-grid",
+      confidence: 0.96,
       scannedFileCount: 6,
       resolutions: ["640x480"],
       schemes: ["global.ini", "muxlaunch.ini"],
@@ -40,6 +44,8 @@ describe("theme compatibility fixtures", () => {
     },
     {
       family: "static-composition",
+      detectedFamily: "static-composition",
+      confidence: 0.97,
       scannedFileCount: 6,
       resolutions: ["640x480"],
       schemes: ["default.ini", "muxlaunch.ini"],
@@ -52,6 +58,8 @@ describe("theme compatibility fixtures", () => {
     },
     {
       family: "scheme-only-partial",
+      detectedFamily: "scheme-only-partial",
+      confidence: 0.9,
       scannedFileCount: 2,
       resolutions: ["640x480"],
       schemes: ["default.ini", "muxlaunch.ini"],
@@ -64,6 +72,8 @@ describe("theme compatibility fixtures", () => {
     },
     {
       family: "empty-unsupported",
+      detectedFamily: "empty-unsupported",
+      confidence: 1,
       scannedFileCount: 1,
       resolutions: [],
       schemes: [],
@@ -85,6 +95,11 @@ describe("theme compatibility fixtures", () => {
     const resolution = inspection.resolutions[0];
 
     expect(inspection.themeName).toBe(expected.family);
+    expect(inspection.themeFamily).toMatchObject({
+      family: expected.detectedFamily,
+      confidence: expected.confidence
+    });
+    expect(inspection.themeFamily.evidence.length).toBeGreaterThan(0);
     expect(inspection.scannedFileCount).toBe(expected.scannedFileCount);
     expect(inspection.resolutions.map((candidate) => candidate.name)).toEqual(
       expected.resolutions
