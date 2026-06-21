@@ -1,140 +1,204 @@
 # Theme Compatibility Audit
 
-## Scope
+## Scope and Method
 
-The requested `references/themes/` directory is not present in this
-repository. This audit covers every direct directory under
-`references/MUOS/theme/` as of 2026-06-20.
+The requested `references/muOS/themes/` directory does not exist in this
+checkout. This audit recursively inspected every direct entry under the
+available `references/MUOS/theme/` corpus on 2026-06-21.
 
-The results come from the existing TypeScript scanner, path-level asset
-analysis, scheme inventory, and representative visual inspection. They do not
-claim complete muOS runtime behavior.
+Evidence includes scanner output, all scheme paths, parsed `default.ini`,
+`global.ini`, and `muxlaunch.ini` values, asset paths and sizes, and visual
+inspection of representative wallpaper/grid/baked assets. Image dimensions
+and pixels were not analyzed programmatically, so undocumented composition and
+sprite behavior remain uncertain.
 
-## Themes Analyzed
+## Corpus Inventory
 
-| Theme | Resolutions | Composition style | Important differences |
+| Theme | Resolutions | Schemes | Wallpapers | Glyphs | Fonts | Localization | Family |
+| --- | --- | ---: | ---: | ---: | ---: | --- | --- |
+| `active` | none | 0 | 0 | 0 | 0 | none | empty entry |
+| `Epic Noir` | `640x480` | 1 | 0 | 0 | 0 | none | partial scheme-only |
+| `muOS - Banana` | `640x480` | 3 | 0 | 0 | 0 | none | scheme-only |
+| `Muos Console Grid` | `640x480` | 9 | 8 | 427 | 3 | none | composited grid |
+| `MustardOS` | six | 55 | 2 | 1635 | 18 | none | composited grid without launcher wallpaper |
+| `MuxRemix-Grid` | six | 18 | 6 | 1632 | 6 | none | composited grid without launcher wallpaper |
+| `Royal Dark MU` | `640x480` | 3 | 12 | 0 | 1 | none | baked full-screen states |
+| `Terminal - Redacted` | six | 40 | 14 | 1685 | 10 | none | wallpaper plus static composition |
+
+The six multi-resolution sizes are `640x480`, `720x480`, `720x576`,
+`720x720`, `1024x768`, and `1280x720`.
+
+No theme-local translation catalog, locale file, PO/MO file, or label database
+was found. Files named `language.png` are glyph assets. Localized labels are
+therefore runtime data or come from a reference source absent from this corpus.
+
+## Theme Families
+
+### Baked UI
+
+Royal Dark MU stores complete launcher states at
+`image/wall/muxlaunch/<item>.png`. Artwork includes title, instructions,
+selection, icons, and decorative layout. It works because current exact path
+and filename assumptions happen to match this theme, while most generated
+layers are suppressed.
+
+### Composited Grid
+
+Console Grid, MustardOS, and MuxRemix provide separate menu artwork under
+`image/grid/muxlaunch/`, `glyph/muxlaunch/`, or both. Their appearance depends
+on scheme inheritance, radius, focus colors, gradients, recoloring, shadows,
+and geometry. These are the themes most damaged by incomplete scheme loading.
+
+### Static Composition
+
+Terminal combines a default wallpaper with
+`image/static/muxlaunch/<item>.png`, overlays, and runtime status assets. The
+static state is not equivalent to either a menu glyph or a complete baked
+wallpaper.
+
+### Scheme-only and Partial
+
+Banana has default/muxlaunch/muxplore schemes but no visual assets or fonts.
+Epic Noir contains only `muxplore.ini`. They are useful parser fixtures, but
+the available directories cannot produce faithful muxlaunch previews.
+
+### Empty
+
+`active` contains no files and is not a renderable theme.
+
+## Compatibility Matrix
+
+| Theme | What works | What fails | Root cause and responsible assumption |
 | --- | --- | --- | --- |
-| `active` | none | empty entry | No assets, schemes, fonts, or resolution folders. |
-| `Epic Noir` | `640x480` | partial scheme fixture | Contains only `muxplore.ini`; no muxlaunch scheme or theme assets. |
-| `muOS - Banana` | `640x480` | scheme-only fixture | Contains default, muxlaunch, and muxplore schemes but no images, glyphs, or fonts. |
-| `Muos Console Grid` | `640x480` | composited grid | Root-shared grid images and glyphs, screen wallpapers, muxlaunch scheme, no `default.ini`. |
-| `MustardOS` | six supported resolutions | composited grid | Mixes root-shared assets with `1024x768` and `1280x720` overrides; no launcher/default wallpaper; `640x480` has no `default.ini`. |
-| `MuxRemix-Grid` | six supported resolutions | composited grid | Resolution-specific grid images, mixed root/resolution glyphs, no launcher/default wallpaper. |
-| `Royal Dark MU` | `640x480` | baked full-screen states | Uses `image/wall/muxlaunch/<item>.png`, has no glyphs, and includes `favourite.png` alongside `collection.png`. |
-| `Terminal - Redacted` | six supported resolutions | static content composition | Uses per-resolution `image/static/muxlaunch/<item>.png`, default wallpapers, overlays, and header glyphs; no muxlaunch item glyphs. |
+| Royal Dark MU | Full-screen states are recognizable; aliases mostly match; duplicated generated layers are suppressed | Hotspots/navigation are approximate; state aliases can still diverge | Exact baked path happens to match. Interaction geometry is hardcoded rather than derived from state metadata |
+| MustardOS | Separate launcher images/glyphs are discovered; row/column count loads | Missing/wrong background, card shape, radius, colors, gradients, recoloring, and some resolution-specific geometry | Shared `scheme/global.ini` is ignored; sparse muxlaunch files are treated as complete; unrelated wall files are not launcher backgrounds |
+| muOS - Banana | Schemes parse and some header/list values map | No wallpaper, glyphs, menu images, or fonts; grid falls back to generic content | Corpus entry is scheme-only. Code assumes a muxlaunch scheme implies enough data for a visual screen |
+| Epic Noir | Resolution and `muxplore.ini` are inspectable | No muxlaunch model or visual assets; almost everything falls back | Entry is a partial muxplore fixture, not a complete muxlaunch theme. Code lacks an explicit partial/unsupported state |
+| Muos Console Grid | Real grid art, glyphs, and muxlaunch wallpaper are found; layout count is correct | Focus is yellow instead of blue; corners and styling are wrong | Blue `CELL_FOCUS_BACKGROUND = 05A3E6` and `CELL_RADIUS = 16` are in root `scheme/global.ini`, which the provider never merges. Renderer uses yellow and zero-radius defaults |
+| MuxRemix-Grid | Resolution-specific menu assets and schemes are found | Fidelity varies by resolution; wallpaper and inherited styling can be incomplete | Mixed root/resolution scope and sparse overrides conflict with exact lookup and incomplete source layering |
+| Terminal - Redacted | Default walls, static states, overlays, and header glyphs match known paths | Runtime/static layer boundaries and interaction regions remain inferred | Static state composition is recognized, but renderer hotspots and status ownership are hardcoded |
+| active | Directory can be scanned | No preview is possible | Empty corpus entry; no explicit renderability contract existed |
 
-The six observed full-theme resolutions are:
+## Specific Investigations
 
-- `640x480`
-- `720x480`
-- `720x576`
-- `720x720`
-- `1024x768`
-- `1280x720`
+### Glyph Discovery
 
-## Structural Differences
+Current discovery requires raster files below a directory literally named
+`glyph`. Launcher selection then requires `glyph/muxlaunch/` or
+`image/grid/muxlaunch/` and a small fixed alias list. When no alias matches,
+the renderer assigns the next unused asset, which can display the wrong icon.
+
+Royal contains no glyphs because icons are baked. Terminal has many glyphs but
+uses static launcher images. Banana and Epic have no glyphs in the available
+files. Missing glyphs are therefore not one universal error condition.
 
 ### Wallpapers
 
-- `wall/default.png` is not universal.
-- `wall/muxlaunch.png` appears in some composited themes but is absent from
-  others.
-- MustardOS and MuxRemix-Grid contain unrelated wall assets such as
-  `muxcharge.png`; these must not be reused as launcher backgrounds.
-- Royal Dark MU stores complete selected launcher states below
-  `image/wall/muxlaunch/`.
-- Terminal wallpapers provide background/header chrome while launcher content
-  is supplied separately by static images.
+The inspector marks every image below both `image` and `wall` as a wallpaper,
+then prefers a file named `default`. The visual-layer service accepts only
+`image/wall/default.*` or `image/wall/muxlaunch.*`.
 
-### Launcher Content
+MustardOS and MuxRemix contain other screen walls but no verified launcher
+wall. Reusing `muxcharge.*` or `muxplore.*` would be incorrect. Royal's nested
+wall states are complete screens, not ordinary backgrounds.
 
-Three incompatible composition patterns are present:
+### Focus Color
 
-1. Runtime grid composition from `image/grid/muxlaunch/` and/or
-   `glyph/muxlaunch/`.
-2. Static content states from `image/static/muxlaunch/` rendered over a
-   separate wallpaper and runtime status layer.
-3. Full-screen baked states from `image/wall/muxlaunch/<item>.png`, where
-   generated menu and status layers can duplicate artwork.
+The mapper supports `grid.CELL_FOCUS_BACKGROUND`, but the provider does not
+load shared `scheme/global.ini`. Console Grid's verified blue focus
+`05A3E6` is therefore absent from the render model. The renderer substitutes
+hardcoded `#F3BD3D`, explaining the observed yellow focus.
 
-Partial fixtures contain no launcher artwork and require a label-only
-structural preview rather than failing or displaying broken asset markers.
+Alternates can also patch focus colors. They are discovered as auxiliary files
+but never parsed into the active model.
 
-### Asset Scope
+### Rounded Corners
 
-- Assets may be shared at theme root.
-- Assets may be resolution-specific.
-- Some themes contain both. muxpreview currently prefers resolution-specific
-  assets and falls back to root assets. This is a preview convention, not a
-  verified muOS precedence rule.
+The mapper supports `grid.CELL_RADIUS`, and the renderer applies it directly.
+The failure is primarily upstream:
 
-### Schemes
+- Console Grid defines `CELL_RADIUS = 16` in ignored root `global.ini`.
+- MustardOS defines a shared radius of 16 and resolution overrides of 26 for
+  `1024x768` and `1280x720`.
+- Resolutions without a local `default.ini` lose the shared radius entirely.
 
-- `muxlaunch.ini` is absent from Epic Noir and the empty `active` entry.
-- `default.ini` is absent from Muos Console Grid and MustardOS `640x480`.
-- A theme can contain valid schemes without any visual assets.
-- muxpreview currently combines a selected resolution's `default.ini` and
-  `muxlaunch.ini` when both exist. Complete global/alternate layering remains
-  unverified.
+When radius is absent, the renderer passes no border radius, producing square
+cards. Gradient, shadow, and current-label radius keys are also unmapped.
 
-### Glyphs and Fonts
+### Localization
 
-- Royal Dark MU has no glyph assets because launcher visuals are baked.
-- Terminal supplies header glyphs but no muxlaunch item glyphs.
-- Grid themes may contain both image-grid assets and matching glyphs.
-- Fonts can be root-shared, resolution-specific, or absent.
-- Observed image formats include PNG, BMP, and GIF.
+The title and menu labels are hardcoded English fixture strings, including
+`Main Menu`, `Explore`, and `Favourites`. No theme-local translation source was
+found. Localized output such as `MENU PRINCIPAL` cannot be derived from these
+theme files and should be modeled as external preview fixture data.
 
-### Naming
+### muxlaunch Scheme Loading
 
-Observed muxlaunch basenames are:
+Current loading merges only resolution-local `default.ini` followed by
+resolution-local `muxlaunch.ini`. It ignores:
 
-`apps`, `collection`, `config`, `explore`, `favourite`, `history`, `info`,
-`reboot`, and `shutdown`.
+- root `scheme/global.ini`
+- root/shared screen schemes
+- alternate INI patches
+- provenance of overwritten values
+- potentially version-specific layering rules
 
-`collection` and singular `favourite` both represent the Favourites item in
-available references. Display labels and localized titles are runtime data and
-must not be inferred solely from filenames.
+Sparse muxlaunch files containing only `COLUMN_COUNT` and `ROW_COUNT` are
+therefore mistaken for nearly complete style sources.
 
-## Unsafe Assumptions
+## Top 10 Assumptions Ranked by Risk
 
-The following assumptions are unsafe:
+Confidence below means confidence that the assumption exists and affects the
+observed result, not confidence that the assumption matches muOS.
 
-- every theme has a resolution folder
-- every resolution has `default.ini` and `muxlaunch.ini`
-- every launcher has `wall/default.png` or `wall/muxlaunch.png`
-- launcher icons are always separate glyphs
-- launcher item filenames are completely consistent
-- root assets are absent when resolution assets exist
-- wallpaper images contain only backgrounds
-- all static muxlaunch images include the same visual layers
-- header glyphs always exist
-- theme fonts always exist
-- unrelated screen wallpapers are valid launcher fallbacks
+| Rank | Assumption | Confidence | Risk | Impact if incorrect |
+| ---: | --- | --- | --- | --- |
+| 1 | Resolution `default.ini` plus `muxlaunch.ini` is the complete scheme stack | High | Critical | Drops global focus, radius, colors, geometry, and status values; proven for Console and Mustard |
+| 2 | Exact known folders are sufficient to identify every semantic asset role | High | High | Valid assets are missed; unfamiliar themes immediately fall back |
+| 3 | A discovered muxlaunch scheme implies a renderable muxlaunch theme | High | High | Scheme-only Banana is presented as a poor theme render instead of a partial fixture |
+| 4 | Missing focus/radius values can safely use yellow and square-card defaults | High | High | Fallback styling is mistaken for theme styling; explains Console mismatch |
+| 5 | Menu identity can be inferred from eight fixed English aliases | High | High | Icons are missing or assigned to the wrong item; localized/custom entries cannot map |
+| 6 | An unmatched item may use any unused launcher asset | High | High | Produces plausible but semantically incorrect previews |
+| 7 | Baked, static, grid, and wallpaper assets can be classified solely by path | High | High | Wrong layer ownership causes duplicated or missing artwork |
+| 8 | Resolution-specific assets always override shared-root assets | High | Medium-high | Mixed-scope themes may select the wrong version; actual muOS precedence is unverified |
+| 9 | Supported scheme keys are enough; gradients, recoloring, shadows, and alternates can be ignored | High | High | Composited themes lose their defining shape and color behavior |
+| 10 | Labels and title belong to the theme and can use hardcoded English fixtures | High | Medium | Localized preview is misleading and cannot match device output |
 
-## Current Fallback Behavior
+## Supported Structures
 
-- Missing resolution: the browser shows an unavailable preview state.
-- Missing muxlaunch scheme: mapped values fail independently and renderer
-  defaults remain available.
-- Missing launcher wallpaper: the virtual canvas uses its neutral background.
-- Missing launcher content: label-only items remain visible without fabricated
-  icon artwork.
-- Missing header glyphs: CSS status indicators are used unless a baked
-  full-screen state suppresses runtime status.
-- Root-only assets: shared assets remain eligible for every resolution.
-- Mixed root/resolution assets: resolution-specific candidates are preferred.
-- Baked wall states: generated launcher and status layers are suppressed.
-- Static content states: the wallpaper and runtime status remain separate.
+Supported with reasonable confidence:
 
-Inspect Mode reports these fallbacks as compatibility warnings for the
-selected resolution.
+- resolution directory detection
+- recursive file inventory
+- INI sections, keys, and values without interpretation
+- exact default/muxlaunch wall paths
+- exact muxlaunch grid/glyph paths
+- Royal-style nested baked states
+- Terminal-style static states
+- root-shared and resolution-specific asset inclusion in selected renderer paths
 
-## Remaining Uncertainties
+Support is structural, not pixel-perfect.
 
-- Exact muOS root-versus-resolution lookup precedence
-- Complete scheme merge order and built-in defaults
-- Whether every nested muxlaunch wall directory represents a full-screen state
-- Runtime localization source and title selection
-- Font decoding and exact text metrics
-- Device compositor behavior for overlays and alpha values
+## Unsupported or Unreliable Structures
+
+- verified global/default/screen/alternate scheme precedence
+- arbitrary asset naming and semantic role resolution
+- sprite sheets and slicing metadata
+- image-dimension-based full-screen detection
+- gradient, shadow, recolor, and several radius variants
+- custom menu models or runtime-provided item order
+- localized labels and titles
+- complete font decoding and metrics
+- automatic detection of baked artwork outside known paths
+- verified root-versus-resolution precedence
+
+## Risk Areas
+
+The highest-risk boundary is between scanning and rendering. Raw assets and a
+partial scheme model reach React, where components repeat path selection,
+aliases, and fallback policy. This disperses compatibility behavior and makes
+one successful theme look like proof of a general model.
+
+The next architecture should produce a resolved manifest with family,
+semantic roles, source provenance, confidence, and diagnostics before the
+renderer runs. See `THEME_LOADING_CONTRACT.md`.
