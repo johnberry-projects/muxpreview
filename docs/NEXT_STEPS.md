@@ -103,6 +103,68 @@ Track fidelity expectations separately:
 - Epic Noir: explicitly unsupported for muxlaunch from available files
 - Terminal: background/static/status ownership remains separate
 
+### Milestone F audit update
+
+The corpus audit now validates the full pipeline:
+
+```text
+Theme -> Inspection -> Theme Family -> Asset Manifest -> PreviewModel
+```
+
+Implemented generic rendering pattern:
+
+- **Shared global scheme layer**
+  - Applies to themes with a root `scheme/global.ini` plus resolution-local
+    muxlaunch schemes.
+  - The PreviewModel builder now receives parsed schemes in the order:
+    shared global, resolution default, screen-specific muxlaunch.
+  - Improved themes: Muos Console Grid and MustardOS across every detected
+    resolution.
+  - Root cause: the asset manifest already exposed `scheme/global.ini` as an
+    alternative, but PreviewModel generation only parsed resolution-local
+    default and muxlaunch schemes. Shared focus color and radius values
+    therefore fell back to muxpreview defaults.
+  - Result: Console Grid and MustardOS resolve the shared blue focus background
+    and radius through the PreviewModel rather than renderer fallback styling.
+
+Remaining reusable rendering gaps:
+
+- **Background-optional composited grids**
+  - Affected themes: MustardOS, MuxRemix-Grid.
+  - These themes provide muxlaunch grid artwork without a launcher wallpaper.
+    The current diagnostic still reports missing launcher wallpaper even when
+    the family pattern can render a useful grid preview without one.
+  - Needed rule: family-aware diagnostics should distinguish optional
+    wallpaper from missing visual content.
+
+- **Shared versus resolution-specific launcher assets**
+  - Affected themes: MustardOS, MuxRemix-Grid.
+  - Mixed root and resolution-scoped grid/glyph assets are currently reported
+    as compatibility diagnostics even when the resolver successfully chooses
+    resolution-specific assets.
+  - Needed rule: diagnostics should classify mixed scopes as provenance
+    information when selection is unambiguous.
+
+- **Manifest fuzzy glyph candidates**
+  - Affected themes: Console Grid, MustardOS, Terminal - Redacted.
+  - Launcher-like filenames under unrelated glyph namespaces, such as
+    `glyph/muxkiosk` or `glyph/muxbackup`, can appear as menu glyph
+    candidates in the manifest. PreviewModel menu rendering already prefers
+    `glyph/muxlaunch` and `image/grid/muxlaunch`, so this is currently a
+    manifest explanation gap rather than a renderer bug.
+  - Needed rule: semantic manifest roles should rank exact screen namespace
+    matches ahead of filename-only aliases.
+
+Unsupported or intentionally partial cases:
+
+- Epic Noir currently has only a muxplore scheme in the inspected resolution;
+  PreviewModel generation reports missing muxlaunch scheme, launcher wallpaper,
+  launcher content, header glyphs, and fonts.
+- muOS - Banana is scheme-only/partial for muxlaunch; it produces a structural
+  PreviewModel with diagnostics and no fabricated visual assets.
+- Empty or unsupported fixtures without a resolution do not produce a
+  PreviewModel; inspection diagnostics must explain the missing resolution.
+
 ## Milestone G: Renderer Fidelity
 
 Resume renderer work only after Milestones A-F are stable. Then implement

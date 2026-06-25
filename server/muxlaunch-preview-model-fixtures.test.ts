@@ -9,10 +9,12 @@ import { ThemeInspectionProvider } from "./theme-inspection-provider";
 const FIXTURE_ROOT = path.resolve(process.cwd(), "fixtures", "themes");
 
 interface FixtureExpectation {
+  cellRadius?: number;
   contentAsset?: string;
   contentMode?: MuxlaunchPreviewModel["content"]["mode"];
   diagnosticsExpected: boolean;
   family: string;
+  focusBackground?: string;
   menuEntriesExpected: boolean;
   modelExpected: boolean;
   resolution?: string;
@@ -33,8 +35,10 @@ const FIXTURES: FixtureExpectation[] = [
   {
     contentAsset: "image/grid/muxlaunch/explore.png",
     contentMode: "grid",
+    cellRadius: 16,
     diagnosticsExpected: true,
     family: "composited-grid",
+    focusBackground: "#05A3E6ff",
     menuEntriesExpected: true,
     modelExpected: true,
     resolution: "640x480",
@@ -99,6 +103,7 @@ describe("PreviewModel regression harness", () => {
       assertWallpaperOrDiagnostic(model, expected);
       assertMenuEntries(model, expected);
       assertDiagnostics(model, expected);
+      assertExpectedStyleRules(model, expected);
       assertStableModelShape(model);
     }
   );
@@ -131,6 +136,10 @@ describe("PreviewModel regression harness", () => {
           "menuEntries": 8,
           "model": true,
           "resolution": "640x480",
+          "style": {
+            "cellRadius": 20,
+            "focusBackground": "#F3BD3Ddc",
+          },
           "wallpaper": "640x480/image/wall/default.png",
           "warnings": [
             "missing-glyphs",
@@ -152,6 +161,10 @@ describe("PreviewModel regression harness", () => {
           "menuEntries": 8,
           "model": true,
           "resolution": "640x480",
+          "style": {
+            "cellRadius": 16,
+            "focusBackground": "#05A3E6ff",
+          },
           "wallpaper": "640x480/image/wall/muxlaunch.png",
           "warnings": [],
         },
@@ -185,6 +198,10 @@ describe("PreviewModel regression harness", () => {
           "menuEntries": 8,
           "model": true,
           "resolution": "640x480",
+          "style": {
+            "cellRadius": undefined,
+            "focusBackground": "#F3BD3Ddc",
+          },
           "wallpaper": undefined,
           "warnings": [
             "missing-fonts",
@@ -204,6 +221,10 @@ describe("PreviewModel regression harness", () => {
           "menuEntries": 8,
           "model": true,
           "resolution": "640x480",
+          "style": {
+            "cellRadius": 12,
+            "focusBackground": "#F3BD3Ddc",
+          },
           "wallpaper": "640x480/image/wall/default.png",
           "warnings": [],
         },
@@ -275,6 +296,20 @@ function assertDiagnostics(
   expect(model.diagnostics).toEqual([]);
 }
 
+function assertExpectedStyleRules(
+  model: MuxlaunchPreviewModel,
+  expected: FixtureExpectation
+): void {
+  if (expected.focusBackground) {
+    expect(model.menu.focus.background).toBe(expected.focusBackground);
+  }
+
+  if (expected.cellRadius !== undefined) {
+    expect(model.menu.focus.borderRadius).toBe(expected.cellRadius);
+    expect(model.menu.item.borderRadius).toBe(expected.cellRadius);
+  }
+}
+
 function assertStableModelShape(model: MuxlaunchPreviewModel): void {
   expect(model.menu.layout.columns).toBeGreaterThan(0);
   expect(model.menu.layout.rows).toBeGreaterThan(0);
@@ -316,6 +351,10 @@ function summarizeFixture(
     menuEntries: model.menu.entries.length,
     model: true,
     resolution: model.resolution.name,
+    style: {
+      cellRadius: model.menu.focus.borderRadius,
+      focusBackground: model.menu.focus.background
+    },
     warnings: inspection.warnings.map((warning) => warning.code),
     wallpaper: model.wallpaper.asset?.relativePath
   };

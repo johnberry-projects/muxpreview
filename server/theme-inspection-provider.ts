@@ -119,6 +119,11 @@ export class ThemeInspectionProvider {
     resolution: string,
   ): Promise<ParsedThemeScheme[] | undefined> {
     const inspection = await this.getInspection();
+    const globalSchemeFiles = inspection.schemeFiles.filter(
+      (candidate) =>
+        !candidate.resolution &&
+        candidate.fileName.toLowerCase() === "global.ini",
+    );
     const baseSchemeFiles = inspection.schemeFiles.filter(
       (candidate) =>
         candidate.resolution === resolution &&
@@ -135,7 +140,7 @@ export class ThemeInspectionProvider {
     }
 
     return Promise.all(
-      [...baseSchemeFiles, schemeFile].map((candidate) =>
+      [...globalSchemeFiles, ...baseSchemeFiles, schemeFile].map((candidate) =>
         this.getScheme(candidate),
       ),
     );
