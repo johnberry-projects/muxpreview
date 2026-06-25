@@ -5,6 +5,7 @@ import type {
   ThemeInspectionResult,
   ThemeResolution,
 } from "../../core/model";
+import { AssetManifestPanel } from "../components/AssetManifestPanel";
 import { GlyphExplorer } from "../components/GlyphExplorer";
 import { InspectionStat } from "../components/InspectionStat";
 import { MappedMuxlaunchPreview } from "../components/MappedMuxlaunchPreview";
@@ -102,6 +103,8 @@ export function ThemeInspectMode({
         loading={loading}
         error={layerError}
       />
+
+      <AssetManifestPanel inspection={inspection} resolution={resolution} />
 
       <ThemeCompositionPanel
         error={compositionError}

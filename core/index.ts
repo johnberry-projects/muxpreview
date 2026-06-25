@@ -1,4 +1,6 @@
 export { ThemeInspectionService } from "./theme-inspection-service";
+export { buildThemeAssetManifest } from "./theme-asset-manifest-builder";
+export type { ThemeAssetManifestInput } from "./theme-asset-manifest-builder";
 export { detectThemeFamily } from "./theme-family-detector";
 export type { ThemeFamilyDetectionInput } from "./theme-family-detector";
 export { analyzeThemeComposition } from "./theme-composition-service";
@@ -23,6 +25,12 @@ export type {
   ThemeSchemeSource,
   ThemeFamily,
   ThemeFamilyDetection,
+  ThemeAssetManifest,
+  ThemeAssetManifestEntry,
+  ThemeAssetManifestFile,
+  ThemeAssetManifestFileKind,
+  ThemeAssetManifestRole,
+  ThemeResolutionAssetManifest,
   ThemeCompositionElement,
   ThemeCompositionReport,
   ThemeCompositionResolutionReport,

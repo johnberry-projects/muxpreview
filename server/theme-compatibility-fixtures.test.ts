@@ -4,6 +4,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import type {
+  ThemeAssetManifestEntry,
+  ThemeAssetManifestRole,
   ThemeInspectionResult,
   ThemeInspectionWarningCode
 } from "../core/model";
@@ -135,6 +137,83 @@ describe("theme compatibility fixtures", () => {
       .toEqual(["muxlaunch.ini"]);
   });
 
+  it.each([
+    {
+      family: "baked-ui",
+      selected: {
+        "primary-wallpaper": "640x480/image/wall/default.png",
+        "muxlaunch-artwork": "640x480/image/wall/muxlaunch/explore.png",
+        "menu-glyph-candidates": undefined,
+        "header-status-glyph-candidates": undefined,
+        fonts: "font/default.bin",
+        "scheme-files": "640x480/scheme/muxlaunch.ini"
+      }
+    },
+    {
+      family: "composited-grid",
+      selected: {
+        "primary-wallpaper": "640x480/image/wall/muxlaunch.png",
+        "muxlaunch-artwork": "image/grid/muxlaunch/explore.png",
+        "menu-glyph-candidates": "glyph/muxlaunch/explore.png",
+        "header-status-glyph-candidates": undefined,
+        fonts: "font/default.bin",
+        "scheme-files": "640x480/scheme/muxlaunch.ini"
+      }
+    },
+    {
+      family: "static-composition",
+      selected: {
+        "primary-wallpaper": "640x480/image/wall/default.png",
+        "muxlaunch-artwork": "640x480/image/static/muxlaunch/explore.png",
+        "menu-glyph-candidates": undefined,
+        "header-status-glyph-candidates": "glyph/header/network_active.png",
+        fonts: "font/default.bin",
+        "scheme-files": "640x480/scheme/muxlaunch.ini"
+      }
+    },
+    {
+      family: "scheme-only-partial",
+      selected: {
+        "primary-wallpaper": undefined,
+        "muxlaunch-artwork": undefined,
+        "menu-glyph-candidates": undefined,
+        "header-status-glyph-candidates": undefined,
+        fonts: undefined,
+        "scheme-files": "640x480/scheme/muxlaunch.ini"
+      }
+    }
+  ])("resolves asset manifest roles for $family", async (expected) => {
+    const inspection = await inspectFixture(expected.family);
+    const manifest = inspection.assetManifest.resolutions[0];
+
+    expect(inspection.assetManifest).toMatchObject({
+      themeName: expected.family,
+      generatedFrom: "theme-inspection",
+      family: { family: inspection.themeFamily.family }
+    });
+    expect(manifest?.resolution).toBe("640x480");
+
+    for (const [role, selectedPath] of Object.entries(expected.selected)) {
+      const entry = findManifestEntry(
+        inspection,
+        role as ThemeAssetManifestRole
+      );
+
+      expect(entry.selectedFile?.relativePath).toBe(selectedPath);
+      expect(entry.confidence).toBeGreaterThan(0);
+      expect(entry.reason.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps shared manifest candidates as alternatives", async () => {
+    const inspection = await inspectFixture("composited-grid");
+    const schemeEntry = findManifestEntry(inspection, "scheme-files");
+
+    expect(schemeEntry.alternatives.map((file) => file.relativePath)).toContain(
+      "scheme/global.ini"
+    );
+  });
+
   it("preserves representative shared focus and radius scheme keys", async () => {
     const inspection = await inspectFixture("composited-grid");
     const globalScheme = inspection.schemeFiles.find(
@@ -175,4 +254,17 @@ function warningCodes(
   inspection: ThemeInspectionResult
 ): ThemeInspectionWarningCode[] {
   return inspection.warnings.map((warning) => warning.code);
+}
+
+function findManifestEntry(
+  inspection: ThemeInspectionResult,
+  role: ThemeAssetManifestRole
+): ThemeAssetManifestEntry {
+  const entry = inspection.assetManifest.resolutions[0]?.entries.find(
+    (candidate) => candidate.role === role
+  );
+
+  expect(entry).toBeDefined();
+
+  return entry as ThemeAssetManifestEntry;
 }

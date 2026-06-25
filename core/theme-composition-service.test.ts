@@ -7,6 +7,10 @@ import type {
   ThemeSchemeFile
 } from "./model";
 import { analyzeThemeComposition } from "./theme-composition-service";
+import {
+  buildThemeAssetManifest,
+  type ThemeAssetManifestInput
+} from "./theme-asset-manifest-builder";
 
 describe("analyzeThemeComposition compatibility warnings", () => {
   it("explains a scheme-only theme instead of assuming assets exist", () => {
@@ -74,7 +78,7 @@ function createInspection({
     wallpapers: images.filter((image) => image.relativePath.includes("/wall/"))
   };
 
-  return {
+  const inspectionBase: ThemeAssetManifestInput = {
     themePath: "C:/theme",
     themeName: "theme",
     resolutions: [resolution],
@@ -84,7 +88,12 @@ function createInspection({
       family: "scheme-only-partial",
       confidence: 1,
       evidence: ["Synthetic test inspection."]
-    },
+    }
+  };
+
+  return {
+    ...inspectionBase,
+    assetManifest: buildThemeAssetManifest(inspectionBase),
     warnings: [],
     scannedFileCount: fonts.length + images.length + schemes.length
   };

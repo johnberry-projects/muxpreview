@@ -9,6 +9,11 @@ export type {
 export type {
   ThemeAsset,
   ThemeAssetGroup,
+  ThemeAssetManifest,
+  ThemeAssetManifestEntry,
+  ThemeAssetManifestFile,
+  ThemeAssetManifestFileKind,
+  ThemeAssetManifestRole,
   ThemeAssetKind,
   ThemeFamily,
   ThemeFamilyDetection,
@@ -16,6 +21,7 @@ export type {
   ThemeInspectionWarning,
   ThemeInspectionWarningCode,
   ThemeResolution,
+  ThemeResolutionAssetManifest,
   ThemeSchemeFile
 } from "./theme";
 export type {

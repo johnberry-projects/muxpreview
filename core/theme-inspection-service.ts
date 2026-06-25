@@ -7,6 +7,7 @@ import type {
 } from "./model";
 import { classifyThemePath } from "./parser";
 import type { ThemeFileScanner } from "./scanner";
+import { buildThemeAssetManifest } from "./theme-asset-manifest-builder";
 import { detectThemeFamily } from "./theme-family-detector";
 import { createInspectionWarnings } from "./validation";
 
@@ -76,14 +77,18 @@ export class ThemeInspectionService {
       schemeFiles,
       assets
     });
-
-    return {
+    const inspectionBase = {
       themePath: scan.rootPath,
       themeName: scan.rootName,
       resolutions: sortedResolutions,
       schemeFiles,
       assets,
-      themeFamily,
+      themeFamily
+    };
+
+    return {
+      ...inspectionBase,
+      assetManifest: buildThemeAssetManifest(inspectionBase),
       warnings,
       scannedFileCount: scan.files.length
     };

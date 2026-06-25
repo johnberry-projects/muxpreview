@@ -6,6 +6,10 @@ import type {
   ThemeResolution
 } from "./model";
 import { resolveMuxlaunchVisualLayers } from "./muxlaunch-visual-layer-service";
+import {
+  buildThemeAssetManifest,
+  type ThemeAssetManifestInput
+} from "./theme-asset-manifest-builder";
 
 describe("resolveMuxlaunchVisualLayers", () => {
   it("prefers a muxlaunch background and preserves embedded top-bar chrome", () => {
@@ -133,7 +137,7 @@ function createInspection({
     )
   };
 
-  return {
+  const inspectionBase: ThemeAssetManifestInput = {
     themePath: "C:/theme",
     themeName: "theme",
     resolutions: [resolution],
@@ -148,7 +152,12 @@ function createInspection({
       family: "composited-grid",
       confidence: 1,
       evidence: ["Synthetic test inspection."]
-    },
+    }
+  };
+
+  return {
+    ...inspectionBase,
+    assetManifest: buildThemeAssetManifest(inspectionBase),
     warnings: [],
     scannedFileCount: images.length + glyphs.length
   };

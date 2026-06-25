@@ -833,6 +833,90 @@ body {
   background: #3a4551;
 }
 
+.asset-manifest-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.asset-manifest-card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #2b333d;
+  border-radius: 0.5rem;
+  background: #11151a;
+}
+
+.asset-manifest-card > div:first-child {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.asset-manifest-card h3 {
+  margin: 0;
+  color: #e8ecf1;
+  font-size: 0.85rem;
+}
+
+.asset-manifest-confidence {
+  flex: 0 0 auto;
+  padding: 0.22rem 0.42rem;
+  border-radius: 999px;
+  color: #11151a;
+  background: #f3bd3d;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.asset-manifest-card dl {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.75rem 0 0;
+}
+
+.asset-manifest-card dl div {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 0.6rem;
+}
+
+.asset-manifest-card dt,
+.asset-manifest-card dd,
+.asset-manifest-alternatives {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+
+.asset-manifest-card dt {
+  color: #73808d;
+}
+
+.asset-manifest-card dd {
+  margin: 0;
+  color: #cbd3dc;
+}
+
+.asset-manifest-alternatives {
+  margin-top: 0.75rem;
+  border-top: 1px solid #222a33;
+  color: #8995a3;
+}
+
+.asset-manifest-alternatives summary {
+  padding-top: 0.75rem;
+  cursor: pointer;
+}
+
+.asset-manifest-alternatives ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+}
+
 .composition-summary {
   margin: 0;
   color: #8995a3;
@@ -1473,6 +1557,10 @@ body {
   }
 
   .visual-layer-list {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-manifest-list {
     grid-template-columns: 1fr;
   }
 

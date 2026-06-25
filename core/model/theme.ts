@@ -66,6 +66,47 @@ export interface ThemeInspectionResult {
   schemeFiles: ThemeSchemeFile[];
   assets: ThemeAssetGroup;
   themeFamily: ThemeFamilyDetection;
+  assetManifest: ThemeAssetManifest;
   warnings: ThemeInspectionWarning[];
   scannedFileCount: number;
+}
+
+export type ThemeAssetManifestRole =
+  | "primary-wallpaper"
+  | "muxlaunch-artwork"
+  | "menu-glyph-candidates"
+  | "header-status-glyph-candidates"
+  | "fonts"
+  | "scheme-files";
+
+export type ThemeAssetManifestFileKind = "font" | "glyph" | "image" | "scheme";
+
+export interface ThemeAssetManifestFile {
+  kind: ThemeAssetManifestFileKind;
+  relativePath: string;
+  fileName: string;
+  size: number;
+  resolution?: string;
+}
+
+export interface ThemeAssetManifestEntry {
+  role: ThemeAssetManifestRole;
+  selectedFile?: ThemeAssetManifestFile;
+  confidence: number;
+  alternatives: ThemeAssetManifestFile[];
+  reason: string;
+}
+
+export interface ThemeResolutionAssetManifest {
+  resolution: string;
+  entries: ThemeAssetManifestEntry[];
+}
+
+export interface ThemeAssetManifest {
+  themeName: string;
+  themePath: string;
+  family: ThemeFamilyDetection;
+  generatedFrom: "theme-inspection";
+  resolutions: ThemeResolutionAssetManifest[];
+  uncertainties: string[];
 }
