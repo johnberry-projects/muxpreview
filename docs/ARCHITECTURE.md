@@ -241,6 +241,29 @@ flowchart LR
     A --> RR
 ```
 
+The current muxlaunch rendering pipeline is:
+
+```mermaid
+flowchart TD
+    T["Theme directory"] --> I["Theme inspection"]
+    I --> F["Theme family detection"]
+    F --> M["Asset manifest"]
+    I --> S["Parsed muxlaunch schemes"]
+    M --> P["PreviewModel builder"]
+    S --> P
+    P --> API["/api/muxlaunch-preview-model"]
+    API --> R["React renderer"]
+    A["Theme asset endpoints"] --> R
+```
+
+`PreviewModel` is the renderer boundary. It contains the resolved wallpaper,
+overlay, content mode, menu entries, per-entry artwork, status glyphs, mapped
+layout values, colors, fonts, focus defaults, and diagnostics for a single
+muxlaunch preview. React components may hold interaction state such as the
+currently highlighted item and image load failures, but they must not choose
+theme assets, inspect theme families, read asset manifests, or infer fallback
+colors from raw schemes.
+
 Future hosts reuse the center:
 
 ```mermaid
@@ -705,6 +728,14 @@ fixture asset references, and source-preserving unmapped values. The Node host
 selects the exact resolution-specific source file and exposes the model; React
 only decides which conservative fields are safe to apply to the static
 fixture. Scheme layering remains a separate future resolver responsibility.
+
+Milestone D adds `GET /api/muxlaunch-preview-model?resolution=<detected-resolution>`.
+The Node host combines inspection, family detection, the asset manifest, and
+the parsed muxlaunch schemes into a resolved `PreviewModel`. This endpoint is
+the rendering contract for the preview surface. Older muxlaunch mapping,
+visual-layer, and composition endpoints remain available for Inspect Mode
+diagnostics, but the renderer does not consume raw inspection assets or
+manifests.
 
 ### 10.3 Asset serving
 

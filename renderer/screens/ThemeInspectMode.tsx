@@ -5,6 +5,7 @@ import type {
   ThemeInspectionResult,
   ThemeResolution,
 } from "../../core/model";
+import type { MuxlaunchPreviewModel } from "../../core/preview";
 import { AssetManifestPanel } from "../components/AssetManifestPanel";
 import { GlyphExplorer } from "../components/GlyphExplorer";
 import { InspectionStat } from "../components/InspectionStat";
@@ -25,6 +26,7 @@ interface ThemeInspectModeProps {
   layerError?: string;
   loading: boolean;
   mappingError?: string;
+  previewModel?: MuxlaunchPreviewModel;
   renderModel?: MuxlaunchRenderModel;
   resolution?: ThemeResolution;
   visualLayers?: MuxlaunchVisualLayerModel;
@@ -38,6 +40,7 @@ export function ThemeInspectMode({
   layerError,
   loading,
   mappingError,
+  previewModel,
   renderModel,
   resolution,
   visualLayers,
@@ -78,20 +81,13 @@ export function ThemeInspectMode({
           <div className="muxlaunch-comparison">
             <div>
               <h3>Static Preview</h3>
-              <StaticMuxlaunchPreview
-                resolution={resolution}
-                glyphs={inspection.assets.glyphs}
-              />
+              <StaticMuxlaunchPreview model={previewModel} />
             </div>
             <div>
               <h3>Mapped Preview</h3>
               <MappedMuxlaunchPreview
-                resolution={resolution}
-                glyphs={inspection.assets.glyphs}
-                images={inspection.assets.images}
-                renderModel={renderModel}
+                model={previewModel}
                 showMetricsOverlay
-                visualLayers={visualLayers}
               />
             </div>
           </div>

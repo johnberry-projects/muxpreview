@@ -2,6 +2,7 @@ import { createServer, type Server } from "node:http";
 import path from "node:path";
 
 import { createMuxlaunchRenderModelApi } from "./muxlaunch-render-model-api";
+import { createMuxlaunchPreviewModelApi } from "./muxlaunch-preview-model-api";
 import { createMuxlaunchVisualLayersApi } from "./muxlaunch-visual-layers-api";
 import { createStaticAppHandler } from "./static-app";
 import { createThemeCompositionApi } from "./theme-composition-api";
@@ -23,6 +24,8 @@ export function createMuxpreviewServer(
   const inspectionProvider = new ThemeInspectionProvider(
     options.themePath ?? process.env.MUXPREVIEW_THEME_PATH,
   );
+  const handleMuxlaunchPreviewModel =
+    createMuxlaunchPreviewModelApi(inspectionProvider);
   const handleMuxlaunchRenderModel =
     createMuxlaunchRenderModelApi(inspectionProvider);
   const handleMuxlaunchVisualLayers =
@@ -39,6 +42,10 @@ export function createMuxpreviewServer(
 
   return createServer(async (request, response) => {
     try {
+      if (await handleMuxlaunchPreviewModel(request, response)) {
+        return;
+      }
+
       if (await handleMuxlaunchRenderModel(request, response)) {
         return;
       }

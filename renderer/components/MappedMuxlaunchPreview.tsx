@@ -1,108 +1,55 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   CSSProperties,
   KeyboardEvent,
 } from "react";
 
 import type {
-  MuxlaunchRenderModel,
-  MuxlaunchVisualLayerModel,
-  ThemeAsset,
-  ThemeResolution,
-} from "../../core/model";
+  MuxlaunchPreviewModel,
+  PreviewGridBox,
+  PreviewMenuCellStyle
+} from "../../core/preview";
+import { previewAssetUrl } from "./muxlaunch-preview-items";
 import {
-  muxlaunchAssetUrl,
-  selectMuxlaunchItems,
-} from "./muxlaunch-preview-items";
-import {
-  compositionTargets,
   itemPositions,
   navigateSelection,
-  type CompositionRegion,
 } from "./muxlaunch-navigation";
 import { MuxlaunchStatusBar } from "./MuxlaunchStatusBar";
 import { VirtualDisplayCanvas } from "./VirtualDisplayCanvas";
 
 interface MappedMuxlaunchPreviewProps {
-  glyphs: ThemeAsset[];
-  images: ThemeAsset[];
-  renderModel?: MuxlaunchRenderModel;
-  resolution: ThemeResolution;
+  model?: MuxlaunchPreviewModel;
   showCaption?: boolean;
   showMetricsOverlay?: boolean;
-  visualLayers?: MuxlaunchVisualLayerModel;
 }
 
-const BASE_FALLBACK_LAYOUT = {
-  columnCount: 4,
-  rowCount: 2,
-  columnWidth: 136,
-  rowHeight: 156,
-  cellWidth: 120,
-  cellHeight: 120,
-};
-
 export function MappedMuxlaunchPreview({
-  glyphs,
-  images,
-  renderModel,
-  resolution,
+  model,
   showCaption = true,
   showMetricsOverlay = false,
-  visualLayers,
 }: MappedMuxlaunchPreviewProps) {
   const previewRef = useRef<HTMLElement>(null);
   const [backgroundFailed, setBackgroundFailed] = useState(false);
   const [contentFailed, setContentFailed] = useState(false);
   const [overlayFailed, setOverlayFailed] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const items = useMemo(
-    () =>
-      selectMuxlaunchItems(
-        glyphs,
-        images,
-        resolution.name,
-        visibleItemCount(renderModel),
-      ),
-    [glyphs, images, renderModel, resolution.name],
-  );
-  const gridStyle = createMappedGridStyle(renderModel, resolution);
-  const selectedItem = items[selectedIndex] ?? items[0];
-  const compositionAsset = useMemo(
-    () =>
-      selectCompositionAsset(
-        images,
-        resolution.name,
-        visualLayers?.contentMode,
-        selectedItem?.aliases,
-      ) ?? visualLayers?.contentAsset,
-    [
-      images,
-      resolution.name,
-      selectedItem?.aliases,
-      visualLayers?.contentAsset,
-      visualLayers?.contentMode,
-    ],
-  );
 
   useEffect(() => {
     setBackgroundFailed(false);
     setContentFailed(false);
     setOverlayFailed(false);
   }, [
-    resolution.name,
-    visualLayers?.backgroundAsset?.relativePath,
-    visualLayers?.contentAsset?.relativePath,
-    visualLayers?.overlayAsset?.relativePath,
+    model?.resolution.name,
+    model?.wallpaper.asset?.relativePath,
+    model?.content.asset?.relativePath,
+    model?.overlay.asset?.relativePath,
   ]);
 
   useEffect(() => {
-    setSelectedIndex(0);
-  }, [resolution.name, visualLayers?.contentMode]);
+    setSelectedIndex(model?.menu.initialFocusIndex ?? 0);
+  }, [model?.resolution.name, model?.content.mode, model?.menu.initialFocusIndex]);
 
-  useEffect(() => {
-    setContentFailed(false);
-  }, [compositionAsset?.relativePath]);
+  const items = model?.menu.entries ?? [];
 
   useEffect(() => {
     if (selectedIndex >= items.length) {
@@ -110,22 +57,29 @@ export function MappedMuxlaunchPreview({
     }
   }, [items.length, selectedIndex]);
 
+  if (!model) {
+    return (
+      <figure className="mapped-muxlaunch-preview">
+        <p className="wallpaper-empty">No preview model is available.</p>
+      </figure>
+    );
+  }
+
+  const previewModel = model;
+  const selectedItem = items[selectedIndex] ?? items[0];
+  const compositionAsset =
+    selectedItem?.compositionAsset ?? previewModel.content.asset;
   const backgroundUrl =
-    visualLayers?.backgroundAsset && !backgroundFailed
-      ? themeImageUrl(visualLayers.backgroundAsset.relativePath)
+    previewModel.wallpaper.asset && !backgroundFailed
+      ? previewAssetUrl(previewModel.wallpaper.asset)
       : undefined;
   const overlayUrl =
-    visualLayers?.overlayEnabled &&
-    visualLayers.overlayAsset &&
-    !overlayFailed
-      ? themeImageUrl(visualLayers.overlayAsset.relativePath)
+    previewModel.overlay.enabled && previewModel.overlay.asset && !overlayFailed
+      ? previewAssetUrl(previewModel.overlay.asset)
       : undefined;
   const staticContentUrl =
-    visualLayers &&
-    visualLayers.contentMode !== "grid" &&
-    compositionAsset &&
-    !contentFailed
-      ? themeImageUrl(compositionAsset.relativePath)
+    previewModel.content.mode !== "grid" && compositionAsset && !contentFailed
+      ? previewAssetUrl(compositionAsset)
       : undefined;
 
   function selectItem(index: number): void {
@@ -134,11 +88,10 @@ export function MappedMuxlaunchPreview({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>): void {
-    const columns = bounded(renderModel?.layout.columnCount, 1, 8) ?? 4;
     const positions = itemPositions(
       items,
-      visualLayers?.contentMode ?? "grid",
-      columns,
+      previewModel.content.mode,
+      previewModel.menu.layout.columns,
     );
     const nextIndex = navigateSelection(
       selectedIndex,
@@ -164,7 +117,7 @@ export function MappedMuxlaunchPreview({
     >
       <VirtualDisplayCanvas
         className="muxlaunch-display mapped-muxlaunch-display"
-        resolution={resolution}
+        resolution={previewModel.resolution}
         backgroundUrl={backgroundUrl}
         backgroundAlt=""
         onBackgroundError={() => setBackgroundFailed(true)}
@@ -172,14 +125,7 @@ export function MappedMuxlaunchPreview({
         onOverlayError={() => setOverlayFailed(true)}
         showMetricsOverlay={showMetricsOverlay}
       >
-        {visualLayers?.contentMode !== "baked" && (
-          <MuxlaunchStatusBar
-            glyphs={glyphs}
-            renderModel={renderModel}
-            resolution={resolution}
-            title="Main Menu"
-          />
-        )}
+        <MuxlaunchStatusBar model={previewModel.statusBar} />
         {staticContentUrl ? (
           <>
             <img
@@ -193,14 +139,14 @@ export function MappedMuxlaunchPreview({
               className="muxlaunch-composition-hotspots"
               role="group"
             >
-              {compositionTargets(items).map(({ index, item, region }) => (
+              {items.map((item, index) => (
                 <button
                   aria-label={item.label}
                   aria-pressed={index === selectedIndex}
                   className="muxlaunch-composition-hotspot"
                   key={item.label}
                   onClick={() => selectItem(index)}
-                  style={compositionRegionStyle(region)}
+                  style={compositionRegionStyle(item.hotspot)}
                   title={item.label}
                   type="button"
                 />
@@ -208,10 +154,11 @@ export function MappedMuxlaunchPreview({
             </div>
           </>
         ) : (
-          <div className="muxlaunch-mapped-grid" style={gridStyle.grid}>
+          <div className="muxlaunch-mapped-grid" style={gridStyle(previewModel)}>
             {items.map((item, index) => {
               const selected = index === selectedIndex;
-              const assetUrl = muxlaunchAssetUrl(item);
+              const cellStyle = selected ? previewModel.menu.focus : previewModel.menu.item;
+              const assetUrl = previewAssetUrl(item.artwork);
 
               return (
                 <button
@@ -219,12 +166,12 @@ export function MappedMuxlaunchPreview({
                   className={`muxlaunch-mapped-item${selected ? " is-selected" : ""}`}
                   key={item.label}
                   onClick={() => selectItem(index)}
-                  style={selected ? gridStyle.focusCell : gridStyle.cell}
+                  style={cellStyleProperties(cellStyle)}
                   type="button"
                 >
                   <span
                     className="muxlaunch-mapped-icon"
-                    style={selected ? gridStyle.focusImage : gridStyle.image}
+                    style={iconStyleProperties(cellStyle)}
                   >
                     {assetUrl ? (
                       <img src={assetUrl} alt="" />
@@ -234,7 +181,7 @@ export function MappedMuxlaunchPreview({
                   </span>
                   <span
                     className="muxlaunch-mapped-label"
-                    style={selected ? gridStyle.focusLabel : gridStyle.label}
+                    style={labelStyleProperties(cellStyle)}
                   >
                     {item.label}
                   </span>
@@ -243,7 +190,7 @@ export function MappedMuxlaunchPreview({
             })}
             <p
               className="muxlaunch-current-label"
-              style={gridStyle.currentLabel}
+              style={currentLabelStyle(previewModel)}
             >
               {selectedItem?.label}
             </p>
@@ -260,204 +207,59 @@ export function MappedMuxlaunchPreview({
   );
 }
 
-function visibleItemCount(renderModel: MuxlaunchRenderModel | undefined): number {
-  const columns = bounded(renderModel?.layout.columnCount, 1, 8);
-  const rows = bounded(renderModel?.layout.rowCount, 1, 4);
-
-  return Math.min((columns ?? 4) * (rows ?? 2), 8);
-}
-
-function createMappedGridStyle(
-  renderModel: MuxlaunchRenderModel | undefined,
-  resolution: ThemeResolution,
-) {
-  const fallbackScale = Math.min(
-    resolution.width / 640,
-    resolution.height / 480,
-  );
-  const fallbackLayout = {
-    columnWidth: BASE_FALLBACK_LAYOUT.columnWidth * fallbackScale,
-    rowHeight: BASE_FALLBACK_LAYOUT.rowHeight * fallbackScale,
-    cellWidth: BASE_FALLBACK_LAYOUT.cellWidth * fallbackScale,
-    cellHeight: BASE_FALLBACK_LAYOUT.cellHeight * fallbackScale,
-  };
-  const layout = renderModel?.layout ?? {};
-  const columns = bounded(layout.columnCount, 1, 8) ?? 4;
-  const rows = bounded(layout.rowCount, 1, 4) ?? 2;
-  const cellWidth = positive(layout.cellWidth) ?? fallbackLayout.cellWidth;
-  const cellHeight = positive(layout.cellHeight) ?? fallbackLayout.cellHeight;
-  const columnWidth = Math.max(
-    cellWidth,
-    positive(layout.columnWidth) ?? fallbackLayout.columnWidth,
-  );
-  const rowHeight = Math.max(
-    cellHeight,
-    positive(layout.rowHeight) ?? fallbackLayout.rowHeight,
-  );
-  const gridWidth = (columns - 1) * columnWidth + cellWidth;
-  const gridHeight = (rows - 1) * rowHeight + cellHeight;
-  const locationX =
-    layout.locationX ?? Math.max(0, (resolution.width - gridWidth) / 2);
-  const locationY =
-    layout.locationY ?? Math.max(0, (resolution.height - gridHeight) / 2);
-  const columnGap = columnWidth - cellWidth;
-  const rowGap = rowHeight - cellHeight;
-  const colors = renderModel?.colors;
-  const alphas = renderModel?.alphas;
-  const borderWidth = bounded(layout.cellBorderWidth, 0, 20) ?? 0;
-  const radius = bounded(layout.cellRadius, 0, Math.max(cellWidth, cellHeight));
-  const labelOffset = layout.currentItemLabelOffsetY ?? 8;
-  const labelFontSize = Math.max(8, Math.round(cellHeight * 0.13));
-  const currentLabelFontSize = Math.max(9, Math.round(cellHeight * 0.15));
-
+function gridStyle(model: MuxlaunchPreviewModel): CSSProperties {
   return {
-    grid: {
-      left: locationX,
-      top: locationY,
-      width: gridWidth,
-      height: gridHeight,
-      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-      gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-      columnGap,
-      rowGap,
-    } satisfies CSSProperties,
-    cell: {
-      borderWidth,
-      borderRadius: radius,
-      borderColor: colorWithAlpha(
-        colors?.cellBorder ?? "#FFFFFF",
-        alphas?.cellBorder ?? 0,
-      ),
-      background: colorWithAlpha(
-        colors?.cellBackground ?? "#11151A",
-        alphas?.cellBackground ?? 150,
-      ),
-      color: colorWithAlpha(
-        colors?.labelText ?? "#FFFFFF",
-        alphas?.labelText ?? 255,
-      ),
-    } satisfies CSSProperties,
-    focusCell: {
-      borderWidth,
-      borderRadius: radius,
-      borderColor: colorWithAlpha(
-        colors?.focusBorder ?? "#F3BD3D",
-        alphas?.focusBorder ?? 255,
-      ),
-      background: colorWithAlpha(
-        colors?.focusBackground ?? "#F3BD3D",
-        alphas?.focusBackground ?? 220,
-      ),
-      color: colorWithAlpha(
-        colors?.focusText ?? "#11151A",
-        alphas?.focusText ?? 255,
-      ),
-    } satisfies CSSProperties,
-    image: {
-      opacity: alphaOpacity(alphas?.cellImage),
-      paddingTop: layout.imagePaddingTop ?? 0,
-    } satisfies CSSProperties,
-    focusImage: {
-      opacity: alphaOpacity(alphas?.focusImage),
-      paddingTop: layout.imagePaddingTop ?? 0,
-    } satisfies CSSProperties,
-    label: {
-      display: alphas?.labelText === 0 ? "none" : undefined,
-      fontSize: labelFontSize,
-      paddingInline: layout.textPaddingSide ?? 0,
-      paddingBottom: layout.textPaddingBottom ?? 0,
-    } satisfies CSSProperties,
-    focusLabel: {
-      display: alphas?.focusText === 0 ? "none" : undefined,
-      fontSize: labelFontSize,
-      paddingInline: layout.textPaddingSide ?? 0,
-      paddingBottom: layout.textPaddingBottom ?? 0,
-    } satisfies CSSProperties,
-    currentLabel: {
-      display: alphas?.currentItemLabelText === 0 ? "none" : undefined,
-      top: gridHeight + labelOffset,
-      color: colorWithAlpha(
-        colors?.currentItemLabelText ?? colors?.focusText ?? "#FFFFFF",
-        alphas?.currentItemLabelText ?? 255,
-      ),
-      fontSize: currentLabelFontSize,
-    } satisfies CSSProperties,
+    left: model.menu.layout.x,
+    top: model.menu.layout.y,
+    width: model.menu.layout.gridWidth,
+    height: model.menu.layout.gridHeight,
+    gridTemplateColumns: `repeat(${model.menu.layout.columns}, minmax(0, 1fr))`,
+    gridTemplateRows: `repeat(${model.menu.layout.rows}, minmax(0, 1fr))`,
+    columnGap: model.menu.layout.columnGap,
+    rowGap: model.menu.layout.rowGap,
   };
 }
 
-function selectCompositionAsset(
-  images: ThemeAsset[],
-  resolutionName: string,
-  contentMode: MuxlaunchVisualLayerModel["contentMode"] | undefined,
-  aliases: string[] | undefined,
-): ThemeAsset | undefined {
-  if (!aliases || contentMode === undefined || contentMode === "grid") {
-    return undefined;
-  }
-
-  const pathSegment =
-    contentMode === "baked"
-      ? "image/wall/muxlaunch/"
-      : "image/static/muxlaunch/";
-  const candidates = images
-    .filter(
-      (asset) =>
-        (!asset.resolution || asset.resolution === resolutionName) &&
-        asset.relativePath.toLowerCase().includes(pathSegment),
-    )
-    .sort((left, right) => {
-      const resolutionPriority =
-        Number(right.resolution === resolutionName) -
-        Number(left.resolution === resolutionName);
-
-      return (
-        resolutionPriority ||
-        left.relativePath.localeCompare(right.relativePath)
-      );
-    });
-
-  return candidates.find((asset) => aliases.includes(fileStem(asset)));
+function cellStyleProperties(style: PreviewMenuCellStyle): CSSProperties {
+  return {
+    borderWidth: style.borderWidth,
+    borderRadius: style.borderRadius,
+    borderColor: style.borderColor,
+    background: style.background,
+    color: style.color,
+  };
 }
 
-function compositionRegionStyle(region: CompositionRegion): CSSProperties {
+function iconStyleProperties(style: PreviewMenuCellStyle): CSSProperties {
+  return {
+    opacity: style.imageOpacity,
+    paddingTop: style.imagePaddingTop,
+  };
+}
+
+function labelStyleProperties(style: PreviewMenuCellStyle): CSSProperties {
+  return {
+    display: style.labelVisible ? undefined : "none",
+    fontSize: style.labelFontSize,
+    paddingInline: style.labelPaddingInline,
+    paddingBottom: style.labelPaddingBottom,
+  };
+}
+
+function currentLabelStyle(model: MuxlaunchPreviewModel): CSSProperties {
+  return {
+    display: model.menu.currentLabel.visible ? undefined : "none",
+    top: model.menu.currentLabel.y,
+    color: model.menu.currentLabel.color,
+    fontSize: model.menu.currentLabel.fontSize,
+  };
+}
+
+function compositionRegionStyle(region: PreviewGridBox): CSSProperties {
   return {
     height: `${region.height * 100}%`,
     left: `${region.left * 100}%`,
     top: `${region.top * 100}%`,
     width: `${region.width * 100}%`,
   };
-}
-
-function fileStem(asset: ThemeAsset): string {
-  return asset.fileName
-    .slice(0, -asset.extension.length)
-    .toLocaleLowerCase();
-}
-
-function themeImageUrl(relativePath: string): string {
-  return `/api/theme-image?path=${encodeURIComponent(relativePath)}`;
-}
-
-function bounded(
-  value: number | undefined,
-  minimum: number,
-  maximum: number,
-): number | undefined {
-  return value !== undefined && value >= minimum && value <= maximum
-    ? value
-    : undefined;
-}
-
-function positive(value: number | undefined): number | undefined {
-  return value !== undefined && value > 0 ? value : undefined;
-}
-
-function alphaOpacity(alpha: number | undefined): number {
-  const validAlpha = bounded(alpha, 0, 255);
-  return validAlpha === undefined ? 1 : validAlpha / 255;
-}
-
-function colorWithAlpha(color: string, alpha: number): string {
-  const validAlpha = bounded(alpha, 0, 255) ?? 255;
-  return `${color}${validAlpha.toString(16).padStart(2, "0")}`;
 }

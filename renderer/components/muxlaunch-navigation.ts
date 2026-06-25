@@ -1,4 +1,4 @@
-import type { MuxlaunchVisualLayerModel } from "../../core/model";
+import type { PreviewContentMode } from "../../core/preview";
 
 export interface CompositionRegion {
   aliases: string[];
@@ -94,7 +94,7 @@ export function navigateSelection(
 
 export function itemPositions(
   items: NavigationItem[],
-  contentMode: MuxlaunchVisualLayerModel["contentMode"],
+  contentMode: PreviewContentMode,
   columns: number,
 ): ItemPosition[] {
   if (contentMode === "grid") {

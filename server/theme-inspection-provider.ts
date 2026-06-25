@@ -9,8 +9,10 @@ import type {
   ThemeInspectionResult,
   ThemeSchemeFile
 } from "../core/model";
+import type { MuxlaunchPreviewModel } from "../core/preview";
 import {
   analyzeThemeComposition,
+  buildMuxlaunchPreviewModel,
   mapMuxlaunchScheme,
   parseThemeScheme,
   resolveMuxlaunchVisualLayers,
@@ -64,6 +66,58 @@ export class ThemeInspectionProvider {
   async getMuxlaunchRenderModelForResolution(
     resolution: string,
   ): Promise<MuxlaunchRenderModel | undefined> {
+    const parsedSchemes =
+      await this.getMuxlaunchParsedSchemesForResolution(resolution);
+
+    if (!parsedSchemes) {
+      return undefined;
+    }
+
+    const schemeFile = parsedSchemes.find(
+      (scheme) => scheme.screenId?.toLowerCase() === "muxlaunch",
+    );
+
+    if (!schemeFile) {
+      return undefined;
+    }
+
+    return mapMuxlaunchScheme(
+      combineSchemes(parsedSchemes, {
+        relativePath: parsedSchemes
+          .map((scheme) => scheme.relativePath)
+          .join(" + "),
+        fileName: schemeFile.fileName,
+        resolution,
+        screenId: "muxlaunch",
+      }),
+    );
+  }
+
+  async getMuxlaunchPreviewModel(
+    resolutionName: string,
+  ): Promise<MuxlaunchPreviewModel | undefined> {
+    const inspection = await this.getInspection();
+    const resolution = inspection.resolutions.find(
+      (candidate) => candidate.name === resolutionName,
+    );
+
+    if (!resolution) {
+      return undefined;
+    }
+
+    return buildMuxlaunchPreviewModel({
+      assetManifest: inspection.assetManifest,
+      inspection,
+      parsedSchemes:
+        (await this.getMuxlaunchParsedSchemesForResolution(resolutionName)) ??
+        [],
+      resolution,
+    });
+  }
+
+  private async getMuxlaunchParsedSchemesForResolution(
+    resolution: string,
+  ): Promise<ParsedThemeScheme[] | undefined> {
     const inspection = await this.getInspection();
     const baseSchemeFiles = inspection.schemeFiles.filter(
       (candidate) =>
@@ -80,21 +134,10 @@ export class ThemeInspectionProvider {
       return undefined;
     }
 
-    const parsedSchemes = await Promise.all(
+    return Promise.all(
       [...baseSchemeFiles, schemeFile].map((candidate) =>
         this.getScheme(candidate),
       ),
-    );
-
-    return mapMuxlaunchScheme(
-      combineSchemes(parsedSchemes, {
-        relativePath: parsedSchemes
-          .map((scheme) => scheme.relativePath)
-          .join(" + "),
-        fileName: schemeFile.fileName,
-        resolution,
-        screenId: "muxlaunch",
-      }),
     );
   }
 

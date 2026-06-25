@@ -1,39 +1,28 @@
 import type {
-  MuxlaunchRenderModel,
-  MuxlaunchVisualLayerModel,
-  ThemeCompositionRisk,
-  ThemeAsset,
   ThemeResolution,
 } from "../../core/model";
+import type { MuxlaunchPreviewModel } from "../../core/preview";
 import { MappedMuxlaunchPreview } from "../components/MappedMuxlaunchPreview";
 import { ResolutionSelector } from "../components/ResolutionSelector";
 
 interface ThemePreviewModeProps {
-  compatibilityWarnings: ThemeCompositionRisk[];
-  glyphs: ThemeAsset[];
-  images: ThemeAsset[];
   loading: boolean;
   mappingError?: string;
-  renderModel?: MuxlaunchRenderModel;
+  previewModel?: MuxlaunchPreviewModel;
   resolution?: ThemeResolution;
   resolutions: ThemeResolution[];
-  visualLayers?: MuxlaunchVisualLayerModel;
   onResolutionChange: (resolution: string) => void;
 }
 
 export function ThemePreviewMode({
-  compatibilityWarnings,
-  glyphs,
-  images,
   loading,
   mappingError,
-  renderModel,
+  previewModel,
   resolution,
   resolutions,
-  visualLayers,
   onResolutionChange,
 }: ThemePreviewModeProps) {
-  const visibleWarnings = compatibilityWarnings.filter(
+  const visibleWarnings = (previewModel?.diagnostics ?? []).filter(
     (warning) => warning.severity !== "low",
   );
 
@@ -63,15 +52,11 @@ export function ThemePreviewMode({
 
       <div className="preview-stage">
         <MappedMuxlaunchPreview
-          glyphs={glyphs}
-          images={images}
-          renderModel={renderModel}
-          resolution={resolution}
+          model={previewModel}
           showCaption={false}
-          visualLayers={visualLayers}
         />
         {loading && (
-          <p className="preview-status">Loading muxlaunch layers...</p>
+          <p className="preview-status">Loading preview model...</p>
         )}
       </div>
 

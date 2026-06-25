@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
-import type { ThemeResolution } from "../../core/model";
-
 interface VirtualDisplayCanvasProps {
   backgroundAlt?: string;
   backgroundUrl?: string;
@@ -11,7 +9,11 @@ interface VirtualDisplayCanvasProps {
   onBackgroundError?: () => void;
   onOverlayError?: () => void;
   overlayUrl?: string;
-  resolution: ThemeResolution;
+  resolution: {
+    name: string;
+    width: number;
+    height: number;
+  };
   showMetricsOverlay?: boolean;
 }
 

@@ -6,6 +6,7 @@ import type {
   ThemeCompositionReport,
   ThemeInspectionResult,
 } from "../../core/model";
+import type { MuxlaunchPreviewModel } from "../../core/preview";
 import { ThemeInspectMode } from "./ThemeInspectMode";
 import { ThemePreviewMode } from "./ThemePreviewMode";
 
@@ -25,6 +26,8 @@ export function ThemeInspectionScreen({
   const [muxlaunchModel, setMuxlaunchModel] =
     useState<MuxlaunchRenderModel>();
   const [muxlaunchError, setMuxlaunchError] = useState<string>();
+  const [previewModel, setPreviewModel] = useState<MuxlaunchPreviewModel>();
+  const [previewModelError, setPreviewModelError] = useState<string>();
   const [visualLayers, setVisualLayers] =
     useState<MuxlaunchVisualLayerModel>();
   const [visualLayerError, setVisualLayerError] = useState<string>();
@@ -36,12 +39,6 @@ export function ThemeInspectionScreen({
     inspection.resolutions.find(
       (resolution) => resolution.name === selectedResolutionName,
     ) ?? inspection.resolutions[0];
-  const compatibilityWarnings = selectedResolution
-    ? compositionReport?.resolutions.find(
-        (report) => report.resolution === selectedResolution.name,
-      )?.compatibilityWarnings ?? []
-    : [];
-
   useEffect(() => {
     const resolutionStillExists = inspection.resolutions.some(
       (resolution) => resolution.name === selectedResolutionName,
@@ -60,6 +57,8 @@ export function ThemeInspectionScreen({
     const controller = new AbortController();
     setMuxlaunchModel(undefined);
     setMuxlaunchError(undefined);
+    setPreviewModel(undefined);
+    setPreviewModelError(undefined);
     setVisualLayers(undefined);
     setVisualLayerError(undefined);
     setCompositionReport(undefined);
@@ -69,8 +68,17 @@ export function ThemeInspectionScreen({
     async function loadMuxlaunchModel() {
       try {
         const resolution = encodeURIComponent(selectedResolution.name);
-        const [renderModelResult, visualLayersResult, compositionResult] =
+        const [
+          previewModelResult,
+          renderModelResult,
+          visualLayersResult,
+          compositionResult
+        ] =
           await Promise.allSettled([
+            fetchJson(
+              `/api/muxlaunch-preview-model?resolution=${resolution}`,
+              controller.signal,
+            ),
             fetchJson(
               `/api/muxlaunch-render-model?resolution=${resolution}`,
               controller.signal,
@@ -81,6 +89,18 @@ export function ThemeInspectionScreen({
             ),
             fetchJson("/api/theme-composition", controller.signal),
           ]);
+
+        if (previewModelResult.status === "fulfilled") {
+          if (!isMuxlaunchPreviewModel(previewModelResult.value)) {
+            throw new Error(
+              "The preview model endpoint returned invalid JSON data.",
+            );
+          }
+
+          setPreviewModel(previewModelResult.value);
+        } else {
+          setPreviewModelError(errorMessage(previewModelResult.reason));
+        }
 
         if (renderModelResult.status === "fulfilled") {
           if (!isMuxlaunchRenderModel(renderModelResult.value)) {
@@ -165,15 +185,11 @@ export function ThemeInspectionScreen({
 
       {workspaceMode === "preview" ? (
         <ThemePreviewMode
-          compatibilityWarnings={compatibilityWarnings}
-          glyphs={inspection.assets.glyphs}
-          images={inspection.assets.images}
           loading={muxlaunchLoading}
-          mappingError={muxlaunchError ?? visualLayerError}
-          renderModel={muxlaunchModel}
+          mappingError={previewModelError ?? muxlaunchError ?? visualLayerError}
+          previewModel={previewModel}
           resolution={selectedResolution}
           resolutions={inspection.resolutions}
-          visualLayers={visualLayers}
           onResolutionChange={setSelectedResolutionName}
         />
       ) : (
@@ -184,6 +200,7 @@ export function ThemeInspectionScreen({
           layerError={visualLayerError}
           loading={muxlaunchLoading}
           mappingError={muxlaunchError}
+          previewModel={previewModel}
           renderModel={muxlaunchModel}
           resolution={selectedResolution}
           visualLayers={visualLayers}
@@ -237,6 +254,17 @@ function isMuxlaunchVisualLayerModel(
     "resolution" in body &&
     "layers" in body &&
     Array.isArray(body.layers)
+  );
+}
+
+function isMuxlaunchPreviewModel(body: unknown): body is MuxlaunchPreviewModel {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "generatedFrom" in body &&
+    "resolution" in body &&
+    "menu" in body &&
+    "diagnostics" in body
   );
 }
 
